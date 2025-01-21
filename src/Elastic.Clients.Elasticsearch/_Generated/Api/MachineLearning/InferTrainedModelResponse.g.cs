@@ -18,16 +18,52 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport.Products.Elasticsearch;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.MachineLearning;
 
+internal sealed partial class InferTrainedModelResponseConverter : System.Text.Json.Serialization.JsonConverter<InferTrainedModelResponse>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropInferenceResults = System.Text.Json.JsonEncodedText.Encode("inference_results");
+
+	public override InferTrainedModelResponse Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<IReadOnlyCollection<Elastic.Clients.Elasticsearch.MachineLearning.InferenceResponseResult>> propInferenceResults = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propInferenceResults.TryRead(ref reader, options, PropInferenceResults))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new InferTrainedModelResponse
+		{
+			InferenceResults = propInferenceResults.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, InferTrainedModelResponse value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropInferenceResults, value.InferenceResults);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(InferTrainedModelResponseConverter))]
 public sealed partial class InferTrainedModelResponse : ElasticsearchResponse
 {
-	[JsonInclude, JsonPropertyName("inference_results")]
 	public IReadOnlyCollection<Elastic.Clients.Elasticsearch.MachineLearning.InferenceResponseResult> InferenceResults { get; init; }
 }

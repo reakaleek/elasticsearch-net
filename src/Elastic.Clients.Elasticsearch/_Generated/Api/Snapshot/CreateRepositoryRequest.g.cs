@@ -72,7 +72,7 @@ public sealed partial class CreateRepositoryRequestParameters : RequestParameter
 /// If both parameters are specified, only the query parameter is used.
 /// </para>
 /// </summary>
-public sealed partial class CreateRepositoryRequest : PlainRequest<CreateRepositoryRequestParameters>, ISelfSerializable
+public sealed partial class CreateRepositoryRequest : PlainRequest<CreateRepositoryRequestParameters>, ISelfTwoWaySerializable
 {
 	public CreateRepositoryRequest(Elastic.Clients.Elasticsearch.Name name) : base(r => r.Required("repository", name))
 	{
@@ -115,12 +115,16 @@ public sealed partial class CreateRepositoryRequest : PlainRequest<CreateReposit
 	/// </summary>
 	[JsonIgnore]
 	public bool? Verify { get => Q<bool?>("verify"); set => Q("verify", value); }
-	[JsonIgnore]
 	public Elastic.Clients.Elasticsearch.Snapshot.IRepository Repository { get; set; }
 
-	void ISelfSerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	void ISelfTwoWaySerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
 	{
 		JsonSerializer.Serialize(writer, Repository, options);
+	}
+
+	void ISelfTwoWaySerializable.Deserialize(ref Utf8JsonReader reader, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	{
+		Repository = settings.RequestResponseSerializer.Deserialize<Elastic.Clients.Elasticsearch.Snapshot.IRepository>(ref reader);
 	}
 }
 

@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,80 @@ using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.QueryRules;
 
+internal sealed partial class QueryRuleConverter : System.Text.Json.Serialization.JsonConverter<QueryRule>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropActions = System.Text.Json.JsonEncodedText.Encode("actions");
+	private static readonly System.Text.Json.JsonEncodedText PropCriteria = System.Text.Json.JsonEncodedText.Encode("criteria");
+	private static readonly System.Text.Json.JsonEncodedText PropPriority = System.Text.Json.JsonEncodedText.Encode("priority");
+	private static readonly System.Text.Json.JsonEncodedText PropRuleId = System.Text.Json.JsonEncodedText.Encode("rule_id");
+	private static readonly System.Text.Json.JsonEncodedText PropType = System.Text.Json.JsonEncodedText.Encode("type");
+
+	public override QueryRule Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.QueryRules.QueryRuleActions> propActions = default;
+		LocalJsonProperty<ICollection<Elastic.Clients.Elasticsearch.QueryRules.QueryRuleCriteria>> propCriteria = default;
+		LocalJsonProperty<int?> propPriority = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Id> propRuleId = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.QueryRules.QueryRuleType> propType = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propActions.TryRead(ref reader, options, PropActions))
+			{
+				continue;
+			}
+
+			if (propCriteria.TryRead(ref reader, options, PropCriteria, typeof(SingleOrManyMarker<IReadOnlyCollection<Elastic.Clients.Elasticsearch.QueryRules.QueryRuleCriteria>, Elastic.Clients.Elasticsearch.QueryRules.QueryRuleCriteria>)))
+			{
+				continue;
+			}
+
+			if (propPriority.TryRead(ref reader, options, PropPriority))
+			{
+				continue;
+			}
+
+			if (propRuleId.TryRead(ref reader, options, PropRuleId))
+			{
+				continue;
+			}
+
+			if (propType.TryRead(ref reader, options, PropType))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new QueryRule
+		{
+			Actions = propActions.Value
+,
+			Criteria = propCriteria.Value
+,
+			Priority = propPriority.Value
+,
+			RuleId = propRuleId.Value
+,
+			Type = propType.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, QueryRule value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropActions, value.Actions);
+		writer.WriteProperty(options, PropCriteria, value.Criteria, typeof(SingleOrManyMarker<IReadOnlyCollection<Elastic.Clients.Elasticsearch.QueryRules.QueryRuleCriteria>, Elastic.Clients.Elasticsearch.QueryRules.QueryRuleCriteria>));
+		writer.WriteProperty(options, PropPriority, value.Priority);
+		writer.WriteProperty(options, PropRuleId, value.RuleId);
+		writer.WriteProperty(options, PropType, value.Type);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(QueryRuleConverter))]
 public sealed partial class QueryRule
 {
 	/// <summary>
@@ -35,7 +110,6 @@ public sealed partial class QueryRule
 	/// The format of this action depends on the rule type.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("actions")]
 	public Elastic.Clients.Elasticsearch.QueryRules.QueryRuleActions Actions { get; set; }
 
 	/// <summary>
@@ -44,10 +118,7 @@ public sealed partial class QueryRule
 	/// If multiple criteria are specified for a rule, all criteria must be met for the rule to be applied.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("criteria")]
-	[SingleOrManyCollectionConverter(typeof(Elastic.Clients.Elasticsearch.QueryRules.QueryRuleCriteria))]
 	public ICollection<Elastic.Clients.Elasticsearch.QueryRules.QueryRuleCriteria> Criteria { get; set; }
-	[JsonInclude, JsonPropertyName("priority")]
 	public int? Priority { get; set; }
 
 	/// <summary>
@@ -55,7 +126,6 @@ public sealed partial class QueryRule
 	/// A unique identifier for the rule.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("rule_id")]
 	public Elastic.Clients.Elasticsearch.Id RuleId { get; set; }
 
 	/// <summary>
@@ -65,7 +135,6 @@ public sealed partial class QueryRule
 	/// <c>exclude</c> will exclude specific documents from search results.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("type")]
 	public Elastic.Clients.Elasticsearch.QueryRules.QueryRuleType Type { get; set; }
 }
 

@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using System;
 using System.Collections.Generic;
@@ -27,52 +28,57 @@ using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.Core.Search;
 
-internal sealed partial class SourceFilterConverter : JsonConverter<SourceFilter>
+internal sealed partial class SourceFilterConverter : System.Text.Json.Serialization.JsonConverter<SourceFilter>
 {
-	public override SourceFilter Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-	{
-		if (reader.TokenType != JsonTokenType.StartObject)
-			throw new JsonException("Unexpected JSON detected.");
-		var variant = new SourceFilter();
-		while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
-		{
-			if (reader.TokenType == JsonTokenType.PropertyName)
-			{
-				var property = reader.GetString();
-				if (property == "excludes" || property == "exclude")
-				{
-					reader.Read();
-					variant.Excludes = new FieldsConverter().Read(ref reader, typeToConvert, options);
-					continue;
-				}
+	private static readonly System.Text.Json.JsonEncodedText PropExcludes = System.Text.Json.JsonEncodedText.Encode("excludes");
+	private static readonly System.Text.Json.JsonEncodedText PropExcludes1 = System.Text.Json.JsonEncodedText.Encode("exclude");
+	private static readonly System.Text.Json.JsonEncodedText PropIncludes = System.Text.Json.JsonEncodedText.Encode("includes");
+	private static readonly System.Text.Json.JsonEncodedText PropIncludes1 = System.Text.Json.JsonEncodedText.Encode("include");
 
-				if (property == "includes" || property == "include")
-				{
-					reader.Read();
-					variant.Includes = new FieldsConverter().Read(ref reader, typeToConvert, options);
-					continue;
-				}
+	public override SourceFilter Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		var readerSnapshot = reader;
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Fields?> propExcludes = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Fields?> propIncludes = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propExcludes.TryRead(ref reader, options, PropExcludes, typeof(SingleOrManyFieldsMarker)) || propExcludes.TryRead(ref reader, options, PropExcludes1, typeof(SingleOrManyFieldsMarker)))
+			{
+				continue;
+			}
+
+			if (propIncludes.TryRead(ref reader, options, PropIncludes, typeof(SingleOrManyFieldsMarker)) || propIncludes.TryRead(ref reader, options, PropIncludes1, typeof(SingleOrManyFieldsMarker)))
+			{
+				continue;
+			}
+
+			try
+			{
+				reader = readerSnapshot;
+				var result = reader.ReadValue<Elastic.Clients.Elasticsearch.Fields?>(options);
+				return new SourceFilter { Includes = result };
+			}
+			catch (System.Text.Json.JsonException)
+			{
+				throw;
 			}
 		}
 
-		return variant;
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new SourceFilter
+		{
+			Excludes = propExcludes.Value
+,
+			Includes = propIncludes.Value
+		};
 	}
 
-	public override void Write(Utf8JsonWriter writer, SourceFilter value, JsonSerializerOptions options)
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, SourceFilter value, System.Text.Json.JsonSerializerOptions options)
 	{
 		writer.WriteStartObject();
-		if (value.Excludes is not null)
-		{
-			writer.WritePropertyName("excludes");
-			new FieldsConverter().Write(writer, value.Excludes, options);
-		}
-
-		if (value.Includes is not null)
-		{
-			writer.WritePropertyName("includes");
-			new FieldsConverter().Write(writer, value.Includes, options);
-		}
-
+		writer.WriteProperty(options, PropExcludes, value.Excludes, typeof(SingleOrManyFieldsMarker));
+		writer.WriteProperty(options, PropIncludes, value.Includes, typeof(SingleOrManyFieldsMarker));
 		writer.WriteEndObject();
 	}
 }

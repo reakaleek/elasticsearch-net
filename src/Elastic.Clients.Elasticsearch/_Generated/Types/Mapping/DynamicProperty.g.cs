@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using System;
 using System.Collections.Generic;
@@ -27,42 +28,356 @@ using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.Mapping;
 
+internal sealed partial class DynamicPropertyConverter : System.Text.Json.Serialization.JsonConverter<DynamicProperty>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropAnalyzer = System.Text.Json.JsonEncodedText.Encode("analyzer");
+	private static readonly System.Text.Json.JsonEncodedText PropBoost = System.Text.Json.JsonEncodedText.Encode("boost");
+	private static readonly System.Text.Json.JsonEncodedText PropCoerce = System.Text.Json.JsonEncodedText.Encode("coerce");
+	private static readonly System.Text.Json.JsonEncodedText PropCopyTo = System.Text.Json.JsonEncodedText.Encode("copy_to");
+	private static readonly System.Text.Json.JsonEncodedText PropDocValues = System.Text.Json.JsonEncodedText.Encode("doc_values");
+	private static readonly System.Text.Json.JsonEncodedText PropDynamic = System.Text.Json.JsonEncodedText.Encode("dynamic");
+	private static readonly System.Text.Json.JsonEncodedText PropEagerGlobalOrdinals = System.Text.Json.JsonEncodedText.Encode("eager_global_ordinals");
+	private static readonly System.Text.Json.JsonEncodedText PropEnabled = System.Text.Json.JsonEncodedText.Encode("enabled");
+	private static readonly System.Text.Json.JsonEncodedText PropFields = System.Text.Json.JsonEncodedText.Encode("fields");
+	private static readonly System.Text.Json.JsonEncodedText PropFormat = System.Text.Json.JsonEncodedText.Encode("format");
+	private static readonly System.Text.Json.JsonEncodedText PropIgnoreAbove = System.Text.Json.JsonEncodedText.Encode("ignore_above");
+	private static readonly System.Text.Json.JsonEncodedText PropIgnoreMalformed = System.Text.Json.JsonEncodedText.Encode("ignore_malformed");
+	private static readonly System.Text.Json.JsonEncodedText PropIndex = System.Text.Json.JsonEncodedText.Encode("index");
+	private static readonly System.Text.Json.JsonEncodedText PropIndexOptions = System.Text.Json.JsonEncodedText.Encode("index_options");
+	private static readonly System.Text.Json.JsonEncodedText PropIndexPhrases = System.Text.Json.JsonEncodedText.Encode("index_phrases");
+	private static readonly System.Text.Json.JsonEncodedText PropIndexPrefixes = System.Text.Json.JsonEncodedText.Encode("index_prefixes");
+	private static readonly System.Text.Json.JsonEncodedText PropLocale = System.Text.Json.JsonEncodedText.Encode("locale");
+	private static readonly System.Text.Json.JsonEncodedText PropMeta = System.Text.Json.JsonEncodedText.Encode("meta");
+	private static readonly System.Text.Json.JsonEncodedText PropNorms = System.Text.Json.JsonEncodedText.Encode("norms");
+	private static readonly System.Text.Json.JsonEncodedText PropNullValue = System.Text.Json.JsonEncodedText.Encode("null_value");
+	private static readonly System.Text.Json.JsonEncodedText PropOnScriptError = System.Text.Json.JsonEncodedText.Encode("on_script_error");
+	private static readonly System.Text.Json.JsonEncodedText PropPositionIncrementGap = System.Text.Json.JsonEncodedText.Encode("position_increment_gap");
+	private static readonly System.Text.Json.JsonEncodedText PropPrecisionStep = System.Text.Json.JsonEncodedText.Encode("precision_step");
+	private static readonly System.Text.Json.JsonEncodedText PropProperties = System.Text.Json.JsonEncodedText.Encode("properties");
+	private static readonly System.Text.Json.JsonEncodedText PropScript = System.Text.Json.JsonEncodedText.Encode("script");
+	private static readonly System.Text.Json.JsonEncodedText PropSearchAnalyzer = System.Text.Json.JsonEncodedText.Encode("search_analyzer");
+	private static readonly System.Text.Json.JsonEncodedText PropSearchQuoteAnalyzer = System.Text.Json.JsonEncodedText.Encode("search_quote_analyzer");
+	private static readonly System.Text.Json.JsonEncodedText PropStore = System.Text.Json.JsonEncodedText.Encode("store");
+	private static readonly System.Text.Json.JsonEncodedText PropTermVector = System.Text.Json.JsonEncodedText.Encode("term_vector");
+	private static readonly System.Text.Json.JsonEncodedText PropTimeSeriesMetric = System.Text.Json.JsonEncodedText.Encode("time_series_metric");
+	private static readonly System.Text.Json.JsonEncodedText PropType = System.Text.Json.JsonEncodedText.Encode("type");
+
+	public override DynamicProperty Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<string?> propAnalyzer = default;
+		LocalJsonProperty<double?> propBoost = default;
+		LocalJsonProperty<bool?> propCoerce = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Fields?> propCopyTo = default;
+		LocalJsonProperty<bool?> propDocValues = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Mapping.DynamicMapping?> propDynamic = default;
+		LocalJsonProperty<bool?> propEagerGlobalOrdinals = default;
+		LocalJsonProperty<bool?> propEnabled = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Mapping.Properties?> propFields = default;
+		LocalJsonProperty<string?> propFormat = default;
+		LocalJsonProperty<int?> propIgnoreAbove = default;
+		LocalJsonProperty<bool?> propIgnoreMalformed = default;
+		LocalJsonProperty<bool?> propIndex = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Mapping.IndexOptions?> propIndexOptions = default;
+		LocalJsonProperty<bool?> propIndexPhrases = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Mapping.TextIndexPrefixes?> propIndexPrefixes = default;
+		LocalJsonProperty<string?> propLocale = default;
+		LocalJsonProperty<IDictionary<string, string>?> propMeta = default;
+		LocalJsonProperty<bool?> propNorms = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.FieldValue?> propNullValue = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Mapping.OnScriptError?> propOnScriptError = default;
+		LocalJsonProperty<int?> propPositionIncrementGap = default;
+		LocalJsonProperty<int?> propPrecisionStep = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Mapping.Properties?> propProperties = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Script?> propScript = default;
+		LocalJsonProperty<string?> propSearchAnalyzer = default;
+		LocalJsonProperty<string?> propSearchQuoteAnalyzer = default;
+		LocalJsonProperty<bool?> propStore = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Mapping.TermVectorOption?> propTermVector = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Mapping.TimeSeriesMetricType?> propTimeSeriesMetric = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propAnalyzer.TryRead(ref reader, options, PropAnalyzer))
+			{
+				continue;
+			}
+
+			if (propBoost.TryRead(ref reader, options, PropBoost))
+			{
+				continue;
+			}
+
+			if (propCoerce.TryRead(ref reader, options, PropCoerce))
+			{
+				continue;
+			}
+
+			if (propCopyTo.TryRead(ref reader, options, PropCopyTo, typeof(SingleOrManyFieldsMarker)))
+			{
+				continue;
+			}
+
+			if (propDocValues.TryRead(ref reader, options, PropDocValues))
+			{
+				continue;
+			}
+
+			if (propDynamic.TryRead(ref reader, options, PropDynamic))
+			{
+				continue;
+			}
+
+			if (propEagerGlobalOrdinals.TryRead(ref reader, options, PropEagerGlobalOrdinals))
+			{
+				continue;
+			}
+
+			if (propEnabled.TryRead(ref reader, options, PropEnabled))
+			{
+				continue;
+			}
+
+			if (propFields.TryRead(ref reader, options, PropFields))
+			{
+				continue;
+			}
+
+			if (propFormat.TryRead(ref reader, options, PropFormat))
+			{
+				continue;
+			}
+
+			if (propIgnoreAbove.TryRead(ref reader, options, PropIgnoreAbove))
+			{
+				continue;
+			}
+
+			if (propIgnoreMalformed.TryRead(ref reader, options, PropIgnoreMalformed))
+			{
+				continue;
+			}
+
+			if (propIndex.TryRead(ref reader, options, PropIndex))
+			{
+				continue;
+			}
+
+			if (propIndexOptions.TryRead(ref reader, options, PropIndexOptions))
+			{
+				continue;
+			}
+
+			if (propIndexPhrases.TryRead(ref reader, options, PropIndexPhrases))
+			{
+				continue;
+			}
+
+			if (propIndexPrefixes.TryRead(ref reader, options, PropIndexPrefixes))
+			{
+				continue;
+			}
+
+			if (propLocale.TryRead(ref reader, options, PropLocale))
+			{
+				continue;
+			}
+
+			if (propMeta.TryRead(ref reader, options, PropMeta))
+			{
+				continue;
+			}
+
+			if (propNorms.TryRead(ref reader, options, PropNorms))
+			{
+				continue;
+			}
+
+			if (propNullValue.TryRead(ref reader, options, PropNullValue))
+			{
+				continue;
+			}
+
+			if (propOnScriptError.TryRead(ref reader, options, PropOnScriptError))
+			{
+				continue;
+			}
+
+			if (propPositionIncrementGap.TryRead(ref reader, options, PropPositionIncrementGap))
+			{
+				continue;
+			}
+
+			if (propPrecisionStep.TryRead(ref reader, options, PropPrecisionStep))
+			{
+				continue;
+			}
+
+			if (propProperties.TryRead(ref reader, options, PropProperties))
+			{
+				continue;
+			}
+
+			if (propScript.TryRead(ref reader, options, PropScript))
+			{
+				continue;
+			}
+
+			if (propSearchAnalyzer.TryRead(ref reader, options, PropSearchAnalyzer))
+			{
+				continue;
+			}
+
+			if (propSearchQuoteAnalyzer.TryRead(ref reader, options, PropSearchQuoteAnalyzer))
+			{
+				continue;
+			}
+
+			if (propStore.TryRead(ref reader, options, PropStore))
+			{
+				continue;
+			}
+
+			if (propTermVector.TryRead(ref reader, options, PropTermVector))
+			{
+				continue;
+			}
+
+			if (propTimeSeriesMetric.TryRead(ref reader, options, PropTimeSeriesMetric))
+			{
+				continue;
+			}
+
+			if (reader.ValueTextEquals(PropType))
+			{
+				reader.Skip();
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new DynamicProperty
+		{
+			Analyzer = propAnalyzer.Value
+,
+			Boost = propBoost.Value
+,
+			Coerce = propCoerce.Value
+,
+			CopyTo = propCopyTo.Value
+,
+			DocValues = propDocValues.Value
+,
+			Dynamic = propDynamic.Value
+,
+			EagerGlobalOrdinals = propEagerGlobalOrdinals.Value
+,
+			Enabled = propEnabled.Value
+,
+			Fields = propFields.Value
+,
+			Format = propFormat.Value
+,
+			IgnoreAbove = propIgnoreAbove.Value
+,
+			IgnoreMalformed = propIgnoreMalformed.Value
+,
+			Index = propIndex.Value
+,
+			IndexOptions = propIndexOptions.Value
+,
+			IndexPhrases = propIndexPhrases.Value
+,
+			IndexPrefixes = propIndexPrefixes.Value
+,
+			Locale = propLocale.Value
+,
+			Meta = propMeta.Value
+,
+			Norms = propNorms.Value
+,
+			NullValue = propNullValue.Value
+,
+			OnScriptError = propOnScriptError.Value
+,
+			PositionIncrementGap = propPositionIncrementGap.Value
+,
+			PrecisionStep = propPrecisionStep.Value
+,
+			Properties = propProperties.Value
+,
+			Script = propScript.Value
+,
+			SearchAnalyzer = propSearchAnalyzer.Value
+,
+			SearchQuoteAnalyzer = propSearchQuoteAnalyzer.Value
+,
+			Store = propStore.Value
+,
+			TermVector = propTermVector.Value
+,
+			TimeSeriesMetric = propTimeSeriesMetric.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, DynamicProperty value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropAnalyzer, value.Analyzer);
+		writer.WriteProperty(options, PropBoost, value.Boost);
+		writer.WriteProperty(options, PropCoerce, value.Coerce);
+		writer.WriteProperty(options, PropCopyTo, value.CopyTo, typeof(SingleOrManyFieldsMarker));
+		writer.WriteProperty(options, PropDocValues, value.DocValues);
+		writer.WriteProperty(options, PropDynamic, value.Dynamic);
+		writer.WriteProperty(options, PropEagerGlobalOrdinals, value.EagerGlobalOrdinals);
+		writer.WriteProperty(options, PropEnabled, value.Enabled);
+		writer.WriteProperty(options, PropFields, value.Fields);
+		writer.WriteProperty(options, PropFormat, value.Format);
+		writer.WriteProperty(options, PropIgnoreAbove, value.IgnoreAbove);
+		writer.WriteProperty(options, PropIgnoreMalformed, value.IgnoreMalformed);
+		writer.WriteProperty(options, PropIndex, value.Index);
+		writer.WriteProperty(options, PropIndexOptions, value.IndexOptions);
+		writer.WriteProperty(options, PropIndexPhrases, value.IndexPhrases);
+		writer.WriteProperty(options, PropIndexPrefixes, value.IndexPrefixes);
+		writer.WriteProperty(options, PropLocale, value.Locale);
+		writer.WriteProperty(options, PropMeta, value.Meta);
+		writer.WriteProperty(options, PropNorms, value.Norms);
+		writer.WriteProperty(options, PropNullValue, value.NullValue);
+		writer.WriteProperty(options, PropOnScriptError, value.OnScriptError);
+		writer.WriteProperty(options, PropPositionIncrementGap, value.PositionIncrementGap);
+		writer.WriteProperty(options, PropPrecisionStep, value.PrecisionStep);
+		writer.WriteProperty(options, PropProperties, value.Properties);
+		writer.WriteProperty(options, PropScript, value.Script);
+		writer.WriteProperty(options, PropSearchAnalyzer, value.SearchAnalyzer);
+		writer.WriteProperty(options, PropSearchQuoteAnalyzer, value.SearchQuoteAnalyzer);
+		writer.WriteProperty(options, PropStore, value.Store);
+		writer.WriteProperty(options, PropTermVector, value.TermVector);
+		writer.WriteProperty(options, PropTimeSeriesMetric, value.TimeSeriesMetric);
+		writer.WriteProperty(options, PropType, value.Type);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(DynamicPropertyConverter))]
 public sealed partial class DynamicProperty : IProperty
 {
-	[JsonInclude, JsonPropertyName("analyzer")]
 	public string? Analyzer { get; set; }
-	[JsonInclude, JsonPropertyName("boost")]
 	public double? Boost { get; set; }
-	[JsonInclude, JsonPropertyName("coerce")]
 	public bool? Coerce { get; set; }
-	[JsonInclude, JsonPropertyName("copy_to")]
-	[JsonConverter(typeof(SingleOrManyFieldsConverter))]
 	public Elastic.Clients.Elasticsearch.Fields? CopyTo { get; set; }
-	[JsonInclude, JsonPropertyName("doc_values")]
 	public bool? DocValues { get; set; }
-	[JsonInclude, JsonPropertyName("dynamic")]
 	public Elastic.Clients.Elasticsearch.Mapping.DynamicMapping? Dynamic { get; set; }
-	[JsonInclude, JsonPropertyName("eager_global_ordinals")]
 	public bool? EagerGlobalOrdinals { get; set; }
-	[JsonInclude, JsonPropertyName("enabled")]
 	public bool? Enabled { get; set; }
-	[JsonInclude, JsonPropertyName("fields")]
 	public Elastic.Clients.Elasticsearch.Mapping.Properties? Fields { get; set; }
-	[JsonInclude, JsonPropertyName("format")]
 	public string? Format { get; set; }
-	[JsonInclude, JsonPropertyName("ignore_above")]
 	public int? IgnoreAbove { get; set; }
-	[JsonInclude, JsonPropertyName("ignore_malformed")]
 	public bool? IgnoreMalformed { get; set; }
-	[JsonInclude, JsonPropertyName("index")]
 	public bool? Index { get; set; }
-	[JsonInclude, JsonPropertyName("index_options")]
 	public Elastic.Clients.Elasticsearch.Mapping.IndexOptions? IndexOptions { get; set; }
-	[JsonInclude, JsonPropertyName("index_phrases")]
 	public bool? IndexPhrases { get; set; }
-	[JsonInclude, JsonPropertyName("index_prefixes")]
 	public Elastic.Clients.Elasticsearch.Mapping.TextIndexPrefixes? IndexPrefixes { get; set; }
-	[JsonInclude, JsonPropertyName("locale")]
 	public string? Locale { get; set; }
 
 	/// <summary>
@@ -70,34 +385,20 @@ public sealed partial class DynamicProperty : IProperty
 	/// Metadata about the field.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("meta")]
 	public IDictionary<string, string>? Meta { get; set; }
-	[JsonInclude, JsonPropertyName("norms")]
 	public bool? Norms { get; set; }
-	[JsonInclude, JsonPropertyName("null_value")]
 	public Elastic.Clients.Elasticsearch.FieldValue? NullValue { get; set; }
-	[JsonInclude, JsonPropertyName("on_script_error")]
 	public Elastic.Clients.Elasticsearch.Mapping.OnScriptError? OnScriptError { get; set; }
-	[JsonInclude, JsonPropertyName("position_increment_gap")]
 	public int? PositionIncrementGap { get; set; }
-	[JsonInclude, JsonPropertyName("precision_step")]
 	public int? PrecisionStep { get; set; }
-	[JsonInclude, JsonPropertyName("properties")]
 	public Elastic.Clients.Elasticsearch.Mapping.Properties? Properties { get; set; }
-	[JsonInclude, JsonPropertyName("script")]
 	public Elastic.Clients.Elasticsearch.Script? Script { get; set; }
-	[JsonInclude, JsonPropertyName("search_analyzer")]
 	public string? SearchAnalyzer { get; set; }
-	[JsonInclude, JsonPropertyName("search_quote_analyzer")]
 	public string? SearchQuoteAnalyzer { get; set; }
-	[JsonInclude, JsonPropertyName("store")]
 	public bool? Store { get; set; }
-	[JsonInclude, JsonPropertyName("term_vector")]
 	public Elastic.Clients.Elasticsearch.Mapping.TermVectorOption? TermVector { get; set; }
-	[JsonInclude, JsonPropertyName("time_series_metric")]
 	public Elastic.Clients.Elasticsearch.Mapping.TimeSeriesMetricType? TimeSeriesMetric { get; set; }
 
-	[JsonInclude, JsonPropertyName("type")]
 	public string Type => "{dynamic_type}";
 }
 

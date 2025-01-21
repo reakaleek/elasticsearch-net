@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Requests;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport;
@@ -49,12 +50,106 @@ public sealed partial class CreateSnapshotRequestParameters : RequestParameters
 	public bool? WaitForCompletion { get => Q<bool?>("wait_for_completion"); set => Q("wait_for_completion", value); }
 }
 
+internal sealed partial class CreateSnapshotRequestConverter : System.Text.Json.Serialization.JsonConverter<CreateSnapshotRequest>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropExpandWildcards = System.Text.Json.JsonEncodedText.Encode("expand_wildcards");
+	private static readonly System.Text.Json.JsonEncodedText PropFeatureStates = System.Text.Json.JsonEncodedText.Encode("feature_states");
+	private static readonly System.Text.Json.JsonEncodedText PropIgnoreUnavailable = System.Text.Json.JsonEncodedText.Encode("ignore_unavailable");
+	private static readonly System.Text.Json.JsonEncodedText PropIncludeGlobalState = System.Text.Json.JsonEncodedText.Encode("include_global_state");
+	private static readonly System.Text.Json.JsonEncodedText PropIndices = System.Text.Json.JsonEncodedText.Encode("indices");
+	private static readonly System.Text.Json.JsonEncodedText PropMetadata = System.Text.Json.JsonEncodedText.Encode("metadata");
+	private static readonly System.Text.Json.JsonEncodedText PropPartial = System.Text.Json.JsonEncodedText.Encode("partial");
+
+	public override CreateSnapshotRequest Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<ICollection<Elastic.Clients.Elasticsearch.ExpandWildcard>?> propExpandWildcards = default;
+		LocalJsonProperty<ICollection<string>?> propFeatureStates = default;
+		LocalJsonProperty<bool?> propIgnoreUnavailable = default;
+		LocalJsonProperty<bool?> propIncludeGlobalState = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Indices?> propIndices = default;
+		LocalJsonProperty<IDictionary<string, object>?> propMetadata = default;
+		LocalJsonProperty<bool?> propPartial = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propExpandWildcards.TryRead(ref reader, options, PropExpandWildcards, typeof(SingleOrManyMarker<IReadOnlyCollection<Elastic.Clients.Elasticsearch.ExpandWildcard>?, Elastic.Clients.Elasticsearch.ExpandWildcard>)))
+			{
+				continue;
+			}
+
+			if (propFeatureStates.TryRead(ref reader, options, PropFeatureStates))
+			{
+				continue;
+			}
+
+			if (propIgnoreUnavailable.TryRead(ref reader, options, PropIgnoreUnavailable))
+			{
+				continue;
+			}
+
+			if (propIncludeGlobalState.TryRead(ref reader, options, PropIncludeGlobalState))
+			{
+				continue;
+			}
+
+			if (propIndices.TryRead(ref reader, options, PropIndices))
+			{
+				continue;
+			}
+
+			if (propMetadata.TryRead(ref reader, options, PropMetadata))
+			{
+				continue;
+			}
+
+			if (propPartial.TryRead(ref reader, options, PropPartial))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new CreateSnapshotRequest
+		{
+			ExpandWildcards = propExpandWildcards.Value
+	,
+			FeatureStates = propFeatureStates.Value
+	,
+			IgnoreUnavailable = propIgnoreUnavailable.Value
+	,
+			IncludeGlobalState = propIncludeGlobalState.Value
+	,
+			Indices = propIndices.Value
+	,
+			Metadata = propMetadata.Value
+	,
+			Partial = propPartial.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, CreateSnapshotRequest value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropExpandWildcards, value.ExpandWildcards, typeof(SingleOrManyMarker<IReadOnlyCollection<Elastic.Clients.Elasticsearch.ExpandWildcard>?, Elastic.Clients.Elasticsearch.ExpandWildcard>));
+		writer.WriteProperty(options, PropFeatureStates, value.FeatureStates);
+		writer.WriteProperty(options, PropIgnoreUnavailable, value.IgnoreUnavailable);
+		writer.WriteProperty(options, PropIncludeGlobalState, value.IncludeGlobalState);
+		writer.WriteProperty(options, PropIndices, value.Indices);
+		writer.WriteProperty(options, PropMetadata, value.Metadata);
+		writer.WriteProperty(options, PropPartial, value.Partial);
+		writer.WriteEndObject();
+	}
+}
+
 /// <summary>
 /// <para>
 /// Create a snapshot.
 /// Take a snapshot of a cluster or of data streams and indices.
 /// </para>
 /// </summary>
+[JsonConverter(typeof(CreateSnapshotRequestConverter))]
 public sealed partial class CreateSnapshotRequest : PlainRequest<CreateSnapshotRequestParameters>
 {
 	public CreateSnapshotRequest(Elastic.Clients.Elasticsearch.Name repository, Elastic.Clients.Elasticsearch.Name snapshot) : base(r => r.Required("repository", repository).Required("snapshot", snapshot))
@@ -75,7 +170,6 @@ public sealed partial class CreateSnapshotRequest : PlainRequest<CreateSnapshotR
 	/// If no response is received before the timeout expires, the request fails and returns an error.
 	/// </para>
 	/// </summary>
-	[JsonIgnore]
 	public Elastic.Clients.Elasticsearch.Duration? MasterTimeout { get => Q<Elastic.Clients.Elasticsearch.Duration?>("master_timeout"); set => Q("master_timeout", value); }
 
 	/// <summary>
@@ -84,7 +178,6 @@ public sealed partial class CreateSnapshotRequest : PlainRequest<CreateSnapshotR
 	/// If <c>false</c>, the request returns a response when the snapshot initializes.
 	/// </para>
 	/// </summary>
-	[JsonIgnore]
 	public bool? WaitForCompletion { get => Q<bool?>("wait_for_completion"); set => Q("wait_for_completion", value); }
 
 	/// <summary>
@@ -93,8 +186,6 @@ public sealed partial class CreateSnapshotRequest : PlainRequest<CreateSnapshotR
 	/// It supports comma-separated values such as <c>open,hidden</c>.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("expand_wildcards")]
-	[SingleOrManyCollectionConverter(typeof(Elastic.Clients.Elasticsearch.ExpandWildcard))]
 	public ICollection<Elastic.Clients.Elasticsearch.ExpandWildcard>? ExpandWildcards { get; set; }
 
 	/// <summary>
@@ -112,7 +203,6 @@ public sealed partial class CreateSnapshotRequest : PlainRequest<CreateSnapshotR
 	/// To exclude all feature states, regardless of the <c>include_global_state</c> value, specify an array with only the value <c>none</c> (<c>["none"]</c>).
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("feature_states")]
 	public ICollection<string>? FeatureStates { get; set; }
 
 	/// <summary>
@@ -121,7 +211,6 @@ public sealed partial class CreateSnapshotRequest : PlainRequest<CreateSnapshotR
 	/// If <c>false</c>, the request returns an error for any data stream or index that is missing or closed.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("ignore_unavailable")]
 	public bool? IgnoreUnavailable { get; set; }
 
 	/// <summary>
@@ -131,7 +220,6 @@ public sealed partial class CreateSnapshotRequest : PlainRequest<CreateSnapshotR
 	/// It also includes data stored in system indices, such as Watches and task records (configurable via <c>feature_states</c>).
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("include_global_state")]
 	public bool? IncludeGlobalState { get; set; }
 
 	/// <summary>
@@ -146,7 +234,6 @@ public sealed partial class CreateSnapshotRequest : PlainRequest<CreateSnapshotR
 	/// Use <c>feature_states</c> instead.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("indices")]
 	public Elastic.Clients.Elasticsearch.Indices? Indices { get; set; }
 
 	/// <summary>
@@ -156,7 +243,6 @@ public sealed partial class CreateSnapshotRequest : PlainRequest<CreateSnapshotR
 	/// This information is not automatically generated by Elasticsearch.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("metadata")]
 	public IDictionary<string, object>? Metadata { get; set; }
 
 	/// <summary>
@@ -169,7 +255,6 @@ public sealed partial class CreateSnapshotRequest : PlainRequest<CreateSnapshotR
 	/// If <c>false</c>, the entire restore operation will fail if one or more indices included in the snapshot do not have all primary shards available.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("partial")]
 	public bool? Partial { get; set; }
 }
 

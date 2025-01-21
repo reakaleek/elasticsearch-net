@@ -9,11 +9,13 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Transport;
 
 #if ELASTICSEARCH_SERVERLESS
 namespace Elastic.Clients.Elasticsearch.Serverless.Serialization;
 #else
+
 namespace Elastic.Clients.Elasticsearch.Serialization;
 #endif
 
@@ -99,12 +101,15 @@ internal sealed class DefaultRequestResponseSerializerOptionsProvider :
 
 	private static IReadOnlyCollection<JsonConverter> CreateDefaultBuiltInConverters(IElasticsearchClientSettings settings) =>
 	[
+		new ContextAwareJsonConverterAttributeFactory<IElasticsearchClientSettings>(settings),
+
+		new SelfSerializableConverterFactory(settings), // For descriptors
+		new SelfTwoWaySerializableConverterFactory(settings), // For some requests
 		new KeyValuePairConverterFactory(settings),
 		new ObjectToInferredTypesConverter(),
-		new SourceConverterFactory(settings),
-		new SelfSerializableConverterFactory(settings),
-		new SelfDeserializableConverterFactory(settings),
-		new SelfTwoWaySerializableConverterFactory(settings),
+		new SingleOrManyMarkerConverterFactory(),
+		new SourceMarkerConverterFactory(settings),
+
 		// Explicitly registered before `IsADictionaryConverterFactory` as we want this specialised converter to match
 		new FieldValuesConverter(),
 		new IsADictionaryConverterFactory(),
@@ -113,7 +118,7 @@ internal sealed class DefaultRequestResponseSerializerOptionsProvider :
 		new UnionConverter(),
 		// TODO: Remove after https://github.com/elastic/elasticsearch-specification/issues/2238 is implemented
 		new StringifiedLongConverter(),
-		new StringifiedIntegerConverter(),
+		new StringifiedIntConverter(),
 		new StringifiedBoolConverter()
 	];
 

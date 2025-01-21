@@ -18,16 +18,52 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport.Products.Elasticsearch;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.TextStructure;
 
+internal sealed partial class TestGrokPatternResponseConverter : System.Text.Json.Serialization.JsonConverter<TestGrokPatternResponse>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropMatches = System.Text.Json.JsonEncodedText.Encode("matches");
+
+	public override TestGrokPatternResponse Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<IReadOnlyCollection<Elastic.Clients.Elasticsearch.TextStructure.MatchedText>> propMatches = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propMatches.TryRead(ref reader, options, PropMatches))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new TestGrokPatternResponse
+		{
+			Matches = propMatches.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, TestGrokPatternResponse value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropMatches, value.Matches);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(TestGrokPatternResponseConverter))]
 public sealed partial class TestGrokPatternResponse : ElasticsearchResponse
 {
-	[JsonInclude, JsonPropertyName("matches")]
 	public IReadOnlyCollection<Elastic.Clients.Elasticsearch.TextStructure.MatchedText> Matches { get; init; }
 }

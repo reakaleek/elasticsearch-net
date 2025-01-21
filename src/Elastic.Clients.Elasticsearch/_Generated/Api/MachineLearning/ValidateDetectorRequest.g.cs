@@ -39,7 +39,7 @@ public sealed partial class ValidateDetectorRequestParameters : RequestParameter
 /// Validate an anomaly detection job.
 /// </para>
 /// </summary>
-public sealed partial class ValidateDetectorRequest : PlainRequest<ValidateDetectorRequestParameters>, ISelfSerializable
+public sealed partial class ValidateDetectorRequest : PlainRequest<ValidateDetectorRequestParameters>, ISelfTwoWaySerializable
 {
 	internal override ApiUrls ApiUrls => ApiUrlLookup.MachineLearningValidateDetector;
 
@@ -49,12 +49,16 @@ public sealed partial class ValidateDetectorRequest : PlainRequest<ValidateDetec
 
 	internal override string OperationName => "ml.validate_detector";
 
-	[JsonIgnore]
 	public Elastic.Clients.Elasticsearch.MachineLearning.Detector Detector { get; set; }
 
-	void ISelfSerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	void ISelfTwoWaySerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
 	{
 		JsonSerializer.Serialize(writer, Detector, options);
+	}
+
+	void ISelfTwoWaySerializable.Deserialize(ref Utf8JsonReader reader, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	{
+		Detector = settings.RequestResponseSerializer.Deserialize<Elastic.Clients.Elasticsearch.MachineLearning.Detector>(ref reader);
 	}
 }
 

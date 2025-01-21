@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using System;
 using System.Collections.Generic;
@@ -27,9 +28,41 @@ using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.Nodes;
 
+internal sealed partial class NodeInfoSettingsNetworkConverter : System.Text.Json.Serialization.JsonConverter<NodeInfoSettingsNetwork>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropHost = System.Text.Json.JsonEncodedText.Encode("host");
+
+	public override NodeInfoSettingsNetwork Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<IReadOnlyCollection<string>?> propHost = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propHost.TryRead(ref reader, options, PropHost, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>)))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new NodeInfoSettingsNetwork
+		{
+			Host = propHost.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, NodeInfoSettingsNetwork value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropHost, value.Host, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>));
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(NodeInfoSettingsNetworkConverter))]
 public sealed partial class NodeInfoSettingsNetwork
 {
-	[JsonInclude, JsonPropertyName("host")]
-	[SingleOrManyCollectionConverter(typeof(string))]
 	public IReadOnlyCollection<string>? Host { get; init; }
 }

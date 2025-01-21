@@ -6,11 +6,13 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Transport;
 
 #if ELASTICSEARCH_SERVERLESS
 namespace Elastic.Clients.Elasticsearch.Serverless.Serialization;
 #else
+
 namespace Elastic.Clients.Elasticsearch.Serialization;
 #endif
 
@@ -80,7 +82,8 @@ public class DefaultSourceSerializerOptionsProvider :
 	[
 		new JsonStringEnumConverter(),
 		new DoubleWithFractionalPortionConverter(),
-		new SingleWithFractionalPortionConverter()
+		new SingleWithFractionalPortionConverter(),
+		// TODO: Add RequestResponseSerializer
 	];
 
 	public DefaultSourceSerializerOptionsProvider(Action<JsonSerializerOptions>? configureOptions = null) :

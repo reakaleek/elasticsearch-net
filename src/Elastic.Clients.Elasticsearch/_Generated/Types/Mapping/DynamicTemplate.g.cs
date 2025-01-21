@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using System;
 using System.Collections.Generic;
@@ -39,12 +40,16 @@ public sealed partial class DynamicTemplate
 			throw new ArgumentNullException(nameof(variant));
 		if (string.IsNullOrWhiteSpace(variantName))
 			throw new ArgumentException("Variant name must not be empty or whitespace.");
-		VariantName = variantName;
+		VariantType = variantName;
 		Variant = variant;
 	}
 
-	internal object Variant { get; }
-	internal string VariantName { get; }
+	internal DynamicTemplate()
+	{
+	}
+
+	public object Variant { get; internal set; }
+	public string VariantType { get; internal set; }
 
 	public static DynamicTemplate Mapping(Elastic.Clients.Elasticsearch.Mapping.IProperty property) => new DynamicTemplate("mapping", property);
 	public static DynamicTemplate Runtime(Elastic.Clients.Elasticsearch.Mapping.IProperty property) => new DynamicTemplate("runtime", property);
@@ -77,167 +82,129 @@ public sealed partial class DynamicTemplate
 	}
 }
 
-internal sealed partial class DynamicTemplateConverter : JsonConverter<DynamicTemplate>
+internal sealed partial class DynamicTemplateConverter : System.Text.Json.Serialization.JsonConverter<DynamicTemplate>
 {
-	public override DynamicTemplate Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+	private static readonly System.Text.Json.JsonEncodedText PropMatch = System.Text.Json.JsonEncodedText.Encode("match");
+	private static readonly System.Text.Json.JsonEncodedText PropMatchMappingType = System.Text.Json.JsonEncodedText.Encode("match_mapping_type");
+	private static readonly System.Text.Json.JsonEncodedText PropMatchPattern = System.Text.Json.JsonEncodedText.Encode("match_pattern");
+	private static readonly System.Text.Json.JsonEncodedText PropPathMatch = System.Text.Json.JsonEncodedText.Encode("path_match");
+	private static readonly System.Text.Json.JsonEncodedText PropPathUnmatch = System.Text.Json.JsonEncodedText.Encode("path_unmatch");
+	private static readonly System.Text.Json.JsonEncodedText PropUnmatch = System.Text.Json.JsonEncodedText.Encode("unmatch");
+	private static readonly System.Text.Json.JsonEncodedText PropUnmatchMappingType = System.Text.Json.JsonEncodedText.Encode("unmatch_mapping_type");
+	private static readonly System.Text.Json.JsonEncodedText VariantMapping = System.Text.Json.JsonEncodedText.Encode("mapping");
+	private static readonly System.Text.Json.JsonEncodedText VariantRuntime = System.Text.Json.JsonEncodedText.Encode("runtime");
+
+	public override DynamicTemplate Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
 	{
-		if (reader.TokenType != JsonTokenType.StartObject)
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<ICollection<string>?> propMatch = default;
+		LocalJsonProperty<ICollection<string>?> propMatchMappingType = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Mapping.MatchType?> propMatchPattern = default;
+		LocalJsonProperty<ICollection<string>?> propPathMatch = default;
+		LocalJsonProperty<ICollection<string>?> propPathUnmatch = default;
+		LocalJsonProperty<ICollection<string>?> propUnmatch = default;
+		LocalJsonProperty<ICollection<string>?> propUnmatchMappingType = default;
+		var variantType = string.Empty;
+		object? variant = null;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
 		{
-			throw new JsonException("Expected start token.");
+			if (propMatch.TryRead(ref reader, options, PropMatch, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>)))
+			{
+				continue;
+			}
+
+			if (propMatchMappingType.TryRead(ref reader, options, PropMatchMappingType, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>)))
+			{
+				continue;
+			}
+
+			if (propMatchPattern.TryRead(ref reader, options, PropMatchPattern))
+			{
+				continue;
+			}
+
+			if (propPathMatch.TryRead(ref reader, options, PropPathMatch, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>)))
+			{
+				continue;
+			}
+
+			if (propPathUnmatch.TryRead(ref reader, options, PropPathUnmatch, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>)))
+			{
+				continue;
+			}
+
+			if (propUnmatch.TryRead(ref reader, options, PropUnmatch, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>)))
+			{
+				continue;
+			}
+
+			if (propUnmatchMappingType.TryRead(ref reader, options, PropUnmatchMappingType, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>)))
+			{
+				continue;
+			}
+
+			if (reader.ValueTextEquals(VariantMapping))
+			{
+				variantType = VariantMapping.Value;
+				variant = reader.ReadValue<Elastic.Clients.Elasticsearch.Mapping.IProperty?>(options);
+				continue;
+			}
+
+			if (reader.ValueTextEquals(VariantRuntime))
+			{
+				variantType = VariantRuntime.Value;
+				variant = reader.ReadValue<Elastic.Clients.Elasticsearch.Mapping.IProperty?>(options);
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
 		}
 
-		object? variantValue = default;
-		string? variantNameValue = default;
-		ICollection<string>? matchValue = default;
-		ICollection<string>? matchMappingTypeValue = default;
-		Elastic.Clients.Elasticsearch.Mapping.MatchType? matchPatternValue = default;
-		ICollection<string>? pathMatchValue = default;
-		ICollection<string>? pathUnmatchValue = default;
-		ICollection<string>? unmatchValue = default;
-		ICollection<string>? unmatchMappingTypeValue = default;
-		while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new DynamicTemplate
 		{
-			if (reader.TokenType != JsonTokenType.PropertyName)
-			{
-				throw new JsonException("Expected a property name token.");
-			}
-
-			if (reader.TokenType != JsonTokenType.PropertyName)
-			{
-				throw new JsonException("Expected a property name token representing the name of an Elasticsearch field.");
-			}
-
-			var propertyName = reader.GetString();
-			reader.Read();
-			if (propertyName == "match")
-			{
-				matchValue = SingleOrManySerializationHelper.Deserialize<string>(ref reader, options);
-				continue;
-			}
-
-			if (propertyName == "match_mapping_type")
-			{
-				matchMappingTypeValue = SingleOrManySerializationHelper.Deserialize<string>(ref reader, options);
-				continue;
-			}
-
-			if (propertyName == "match_pattern")
-			{
-				matchPatternValue = JsonSerializer.Deserialize<Elastic.Clients.Elasticsearch.Mapping.MatchType?>(ref reader, options);
-				continue;
-			}
-
-			if (propertyName == "path_match")
-			{
-				pathMatchValue = SingleOrManySerializationHelper.Deserialize<string>(ref reader, options);
-				continue;
-			}
-
-			if (propertyName == "path_unmatch")
-			{
-				pathUnmatchValue = SingleOrManySerializationHelper.Deserialize<string>(ref reader, options);
-				continue;
-			}
-
-			if (propertyName == "unmatch")
-			{
-				unmatchValue = SingleOrManySerializationHelper.Deserialize<string>(ref reader, options);
-				continue;
-			}
-
-			if (propertyName == "unmatch_mapping_type")
-			{
-				unmatchMappingTypeValue = SingleOrManySerializationHelper.Deserialize<string>(ref reader, options);
-				continue;
-			}
-
-			if (propertyName == "mapping")
-			{
-				variantValue = JsonSerializer.Deserialize<Elastic.Clients.Elasticsearch.Mapping.IProperty?>(ref reader, options);
-				variantNameValue = propertyName;
-				continue;
-			}
-
-			if (propertyName == "runtime")
-			{
-				variantValue = JsonSerializer.Deserialize<Elastic.Clients.Elasticsearch.Mapping.IProperty?>(ref reader, options);
-				variantNameValue = propertyName;
-				continue;
-			}
-
-			throw new JsonException($"Unknown property name '{propertyName}' received while deserializing the 'DynamicTemplate' from the response.");
-		}
-
-		var result = new DynamicTemplate(variantNameValue, variantValue);
-		result.Match = matchValue;
-		result.MatchMappingType = matchMappingTypeValue;
-		result.MatchPattern = matchPatternValue;
-		result.PathMatch = pathMatchValue;
-		result.PathUnmatch = pathUnmatchValue;
-		result.Unmatch = unmatchValue;
-		result.UnmatchMappingType = unmatchMappingTypeValue;
-		return result;
+			VariantType = variantType,
+			Variant = variant,
+			Match = propMatch.Value
+,
+			MatchMappingType = propMatchMappingType.Value
+,
+			MatchPattern = propMatchPattern.Value
+,
+			PathMatch = propPathMatch.Value
+,
+			PathUnmatch = propPathUnmatch.Value
+,
+			Unmatch = propUnmatch.Value
+,
+			UnmatchMappingType = propUnmatchMappingType.Value
+		};
 	}
 
-	public override void Write(Utf8JsonWriter writer, DynamicTemplate value, JsonSerializerOptions options)
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, DynamicTemplate value, System.Text.Json.JsonSerializerOptions options)
 	{
 		writer.WriteStartObject();
-		if (value.Match is not null)
+		switch (value.VariantType)
 		{
-			writer.WritePropertyName("match");
-			SingleOrManySerializationHelper.Serialize<string>(value.Match, writer, options);
+			case "":
+				break;
+			case "mapping":
+				writer.WriteProperty(options, value.VariantType, (Elastic.Clients.Elasticsearch.Mapping.IProperty?)value.Variant);
+				break;
+			case "runtime":
+				writer.WriteProperty(options, value.VariantType, (Elastic.Clients.Elasticsearch.Mapping.IProperty?)value.Variant);
+				break;
+			default:
+				throw new System.Text.Json.JsonException($"Variant '{value.VariantType}' is not supported for type '{nameof(DynamicTemplate)}'.");
 		}
 
-		if (value.MatchMappingType is not null)
-		{
-			writer.WritePropertyName("match_mapping_type");
-			SingleOrManySerializationHelper.Serialize<string>(value.MatchMappingType, writer, options);
-		}
-
-		if (value.MatchPattern is not null)
-		{
-			writer.WritePropertyName("match_pattern");
-			JsonSerializer.Serialize(writer, value.MatchPattern, options);
-		}
-
-		if (value.PathMatch is not null)
-		{
-			writer.WritePropertyName("path_match");
-			SingleOrManySerializationHelper.Serialize<string>(value.PathMatch, writer, options);
-		}
-
-		if (value.PathUnmatch is not null)
-		{
-			writer.WritePropertyName("path_unmatch");
-			SingleOrManySerializationHelper.Serialize<string>(value.PathUnmatch, writer, options);
-		}
-
-		if (value.Unmatch is not null)
-		{
-			writer.WritePropertyName("unmatch");
-			SingleOrManySerializationHelper.Serialize<string>(value.Unmatch, writer, options);
-		}
-
-		if (value.UnmatchMappingType is not null)
-		{
-			writer.WritePropertyName("unmatch_mapping_type");
-			SingleOrManySerializationHelper.Serialize<string>(value.UnmatchMappingType, writer, options);
-		}
-
-		if (value.VariantName is not null && value.Variant is not null)
-		{
-			writer.WritePropertyName(value.VariantName);
-			switch (value.VariantName)
-			{
-				case "mapping":
-					JsonSerializer.Serialize<Elastic.Clients.Elasticsearch.Mapping.IProperty>(writer, (Elastic.Clients.Elasticsearch.Mapping.IProperty)value.Variant, options);
-					break;
-				case "runtime":
-					JsonSerializer.Serialize<Elastic.Clients.Elasticsearch.Mapping.IProperty>(writer, (Elastic.Clients.Elasticsearch.Mapping.IProperty)value.Variant, options);
-					break;
-			}
-		}
-
+		writer.WriteProperty(options, PropMatch, value.Match, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>));
+		writer.WriteProperty(options, PropMatchMappingType, value.MatchMappingType, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>));
+		writer.WriteProperty(options, PropMatchPattern, value.MatchPattern);
+		writer.WriteProperty(options, PropPathMatch, value.PathMatch, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>));
+		writer.WriteProperty(options, PropPathUnmatch, value.PathUnmatch, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>));
+		writer.WriteProperty(options, PropUnmatch, value.Unmatch, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>));
+		writer.WriteProperty(options, PropUnmatchMappingType, value.UnmatchMappingType, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>));
 		writer.WriteEndObject();
 	}
 }

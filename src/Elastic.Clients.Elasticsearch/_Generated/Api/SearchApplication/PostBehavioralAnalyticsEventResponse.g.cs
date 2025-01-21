@@ -18,18 +18,63 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport.Products.Elasticsearch;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.SearchApplication;
 
+internal sealed partial class PostBehavioralAnalyticsEventResponseConverter : System.Text.Json.Serialization.JsonConverter<PostBehavioralAnalyticsEventResponse>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropAccepted = System.Text.Json.JsonEncodedText.Encode("accepted");
+	private static readonly System.Text.Json.JsonEncodedText PropEvent = System.Text.Json.JsonEncodedText.Encode("event");
+
+	public override PostBehavioralAnalyticsEventResponse Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<bool> propAccepted = default;
+		LocalJsonProperty<object?> propEvent = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propAccepted.TryRead(ref reader, options, PropAccepted))
+			{
+				continue;
+			}
+
+			if (propEvent.TryRead(ref reader, options, PropEvent))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new PostBehavioralAnalyticsEventResponse
+		{
+			Accepted = propAccepted.Value
+,
+			Event = propEvent.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, PostBehavioralAnalyticsEventResponse value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropAccepted, value.Accepted);
+		writer.WriteProperty(options, PropEvent, value.Event);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(PostBehavioralAnalyticsEventResponseConverter))]
 public sealed partial class PostBehavioralAnalyticsEventResponse : ElasticsearchResponse
 {
-	[JsonInclude, JsonPropertyName("accepted")]
 	public bool Accepted { get; init; }
-	[JsonInclude, JsonPropertyName("event")]
 	public object? Event { get; init; }
 }

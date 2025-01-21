@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Requests;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport;
@@ -32,6 +33,69 @@ namespace Elastic.Clients.Elasticsearch.Security;
 
 public sealed partial class BulkUpdateApiKeysRequestParameters : RequestParameters
 {
+}
+
+internal sealed partial class BulkUpdateApiKeysRequestConverter : System.Text.Json.Serialization.JsonConverter<BulkUpdateApiKeysRequest>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropExpiration = System.Text.Json.JsonEncodedText.Encode("expiration");
+	private static readonly System.Text.Json.JsonEncodedText PropIds = System.Text.Json.JsonEncodedText.Encode("ids");
+	private static readonly System.Text.Json.JsonEncodedText PropMetadata = System.Text.Json.JsonEncodedText.Encode("metadata");
+	private static readonly System.Text.Json.JsonEncodedText PropRoleDescriptors = System.Text.Json.JsonEncodedText.Encode("role_descriptors");
+
+	public override BulkUpdateApiKeysRequest Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Duration?> propExpiration = default;
+		LocalJsonProperty<ICollection<string>> propIds = default;
+		LocalJsonProperty<IDictionary<string, object>?> propMetadata = default;
+		LocalJsonProperty<IDictionary<string, Elastic.Clients.Elasticsearch.Security.RoleDescriptor>?> propRoleDescriptors = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propExpiration.TryRead(ref reader, options, PropExpiration))
+			{
+				continue;
+			}
+
+			if (propIds.TryRead(ref reader, options, PropIds, typeof(SingleOrManyMarker<IReadOnlyCollection<string>, string>)))
+			{
+				continue;
+			}
+
+			if (propMetadata.TryRead(ref reader, options, PropMetadata))
+			{
+				continue;
+			}
+
+			if (propRoleDescriptors.TryRead(ref reader, options, PropRoleDescriptors))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new BulkUpdateApiKeysRequest
+		{
+			Expiration = propExpiration.Value
+,
+			Ids = propIds.Value
+,
+			Metadata = propMetadata.Value
+,
+			RoleDescriptors = propRoleDescriptors.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, BulkUpdateApiKeysRequest value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropExpiration, value.Expiration);
+		writer.WriteProperty(options, PropIds, value.Ids, typeof(SingleOrManyMarker<IReadOnlyCollection<string>, string>));
+		writer.WriteProperty(options, PropMetadata, value.Metadata);
+		writer.WriteProperty(options, PropRoleDescriptors, value.RoleDescriptors);
+		writer.WriteEndObject();
+	}
 }
 
 /// <summary>
@@ -60,6 +124,7 @@ public sealed partial class BulkUpdateApiKeysRequestParameters : RequestParamete
 /// A successful request returns a JSON structure that contains the IDs of all updated API keys, the IDs of API keys that already had the requested changes and did not require an update, and error details for any failed update.
 /// </para>
 /// </summary>
+[JsonConverter(typeof(BulkUpdateApiKeysRequestConverter))]
 public sealed partial class BulkUpdateApiKeysRequest : PlainRequest<BulkUpdateApiKeysRequestParameters>
 {
 	internal override ApiUrls ApiUrls => ApiUrlLookup.SecurityBulkUpdateApiKeys;
@@ -77,7 +142,6 @@ public sealed partial class BulkUpdateApiKeysRequest : PlainRequest<BulkUpdateAp
 	/// This property can be omitted to leave the value unchanged.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("expiration")]
 	public Elastic.Clients.Elasticsearch.Duration? Expiration { get; set; }
 
 	/// <summary>
@@ -85,8 +149,6 @@ public sealed partial class BulkUpdateApiKeysRequest : PlainRequest<BulkUpdateAp
 	/// The API key identifiers.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("ids")]
-	[SingleOrManyCollectionConverter(typeof(string))]
 	public ICollection<string> Ids { get; set; }
 
 	/// <summary>
@@ -96,7 +158,6 @@ public sealed partial class BulkUpdateApiKeysRequest : PlainRequest<BulkUpdateAp
 	/// Any information specified with this parameter fully replaces metadata previously associated with the API key.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("metadata")]
 	public IDictionary<string, object>? Metadata { get; set; }
 
 	/// <summary>
@@ -110,7 +171,6 @@ public sealed partial class BulkUpdateApiKeysRequest : PlainRequest<BulkUpdateAp
 	/// The structure of a role descriptor is the same as the request for the create API keys API.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("role_descriptors")]
 	public IDictionary<string, Elastic.Clients.Elasticsearch.Security.RoleDescriptor>? RoleDescriptors { get; set; }
 }
 

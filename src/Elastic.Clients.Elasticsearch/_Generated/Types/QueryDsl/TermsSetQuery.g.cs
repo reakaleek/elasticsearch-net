@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using System;
 using System.Collections.Generic;
@@ -27,104 +28,98 @@ using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.QueryDsl;
 
-internal sealed partial class TermsSetQueryConverter : JsonConverter<TermsSetQuery>
+internal sealed partial class TermsSetQueryConverter : System.Text.Json.Serialization.JsonConverter<TermsSetQuery>
 {
-	public override TermsSetQuery Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+	private static readonly System.Text.Json.JsonEncodedText PropBoost = System.Text.Json.JsonEncodedText.Encode("boost");
+	private static readonly System.Text.Json.JsonEncodedText PropField = System.Text.Json.JsonEncodedText.Encode("field");
+	private static readonly System.Text.Json.JsonEncodedText PropMinimumShouldMatch = System.Text.Json.JsonEncodedText.Encode("minimum_should_match");
+	private static readonly System.Text.Json.JsonEncodedText PropMinimumShouldMatchField = System.Text.Json.JsonEncodedText.Encode("minimum_should_match_field");
+	private static readonly System.Text.Json.JsonEncodedText PropMinimumShouldMatchScript = System.Text.Json.JsonEncodedText.Encode("minimum_should_match_script");
+	private static readonly System.Text.Json.JsonEncodedText PropQueryName = System.Text.Json.JsonEncodedText.Encode("_name");
+	private static readonly System.Text.Json.JsonEncodedText PropTerms = System.Text.Json.JsonEncodedText.Encode("terms");
+
+	public override TermsSetQuery Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
 	{
-		if (reader.TokenType != JsonTokenType.StartObject)
-			throw new JsonException("Unexpected JSON detected.");
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Field> propField = default;
 		reader.Read();
-		var fieldName = reader.GetString();
+		propField.Value = reader.ReadValue<Elastic.Clients.Elasticsearch.Field>(options);
+		propField.Initialized = true;
 		reader.Read();
-		var variant = new TermsSetQuery(fieldName);
-		while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<float?> propBoost = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.MinimumShouldMatch?> propMinimumShouldMatch = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Field?> propMinimumShouldMatchField = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Script?> propMinimumShouldMatchScript = default;
+		LocalJsonProperty<string?> propQueryName = default;
+		LocalJsonProperty<ICollection<Elastic.Clients.Elasticsearch.FieldValue>> propTerms = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
 		{
-			if (reader.TokenType == JsonTokenType.PropertyName)
+			if (propBoost.TryRead(ref reader, options, PropBoost))
 			{
-				var property = reader.GetString();
-				if (property == "boost")
-				{
-					variant.Boost = JsonSerializer.Deserialize<float?>(ref reader, options);
-					continue;
-				}
-
-				if (property == "minimum_should_match")
-				{
-					variant.MinimumShouldMatch = JsonSerializer.Deserialize<Elastic.Clients.Elasticsearch.MinimumShouldMatch?>(ref reader, options);
-					continue;
-				}
-
-				if (property == "minimum_should_match_field")
-				{
-					variant.MinimumShouldMatchField = JsonSerializer.Deserialize<Elastic.Clients.Elasticsearch.Field?>(ref reader, options);
-					continue;
-				}
-
-				if (property == "minimum_should_match_script")
-				{
-					variant.MinimumShouldMatchScript = JsonSerializer.Deserialize<Elastic.Clients.Elasticsearch.Script?>(ref reader, options);
-					continue;
-				}
-
-				if (property == "_name")
-				{
-					variant.QueryName = JsonSerializer.Deserialize<string?>(ref reader, options);
-					continue;
-				}
-
-				if (property == "terms")
-				{
-					variant.Terms = JsonSerializer.Deserialize<ICollection<Elastic.Clients.Elasticsearch.FieldValue>>(ref reader, options);
-					continue;
-				}
+				continue;
 			}
+
+			if (propMinimumShouldMatch.TryRead(ref reader, options, PropMinimumShouldMatch))
+			{
+				continue;
+			}
+
+			if (propMinimumShouldMatchField.TryRead(ref reader, options, PropMinimumShouldMatchField))
+			{
+				continue;
+			}
+
+			if (propMinimumShouldMatchScript.TryRead(ref reader, options, PropMinimumShouldMatchScript))
+			{
+				continue;
+			}
+
+			if (propQueryName.TryRead(ref reader, options, PropQueryName))
+			{
+				continue;
+			}
+
+			if (propTerms.TryRead(ref reader, options, PropTerms))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
 		}
 
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
 		reader.Read();
-		return variant;
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new TermsSetQuery
+		{
+			Boost = propBoost.Value
+,
+			Field = propField.Value
+,
+			MinimumShouldMatch = propMinimumShouldMatch.Value
+,
+			MinimumShouldMatchField = propMinimumShouldMatchField.Value
+,
+			MinimumShouldMatchScript = propMinimumShouldMatchScript.Value
+,
+			QueryName = propQueryName.Value
+,
+			Terms = propTerms.Value
+		};
 	}
 
-	public override void Write(Utf8JsonWriter writer, TermsSetQuery value, JsonSerializerOptions options)
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, TermsSetQuery value, System.Text.Json.JsonSerializerOptions options)
 	{
-		if (value.Field is null)
-			throw new JsonException("Unable to serialize TermsSetQuery because the `Field` property is not set. Field name queries must include a valid field name.");
-		if (!options.TryGetClientSettings(out var settings))
-			throw new JsonException("Unable to retrieve client settings required to infer field.");
 		writer.WriteStartObject();
-		writer.WritePropertyName(settings.Inferrer.Field(value.Field));
+		writer.WritePropertyName(options, value.Field);
 		writer.WriteStartObject();
-		if (value.Boost.HasValue)
-		{
-			writer.WritePropertyName("boost");
-			writer.WriteNumberValue(value.Boost.Value);
-		}
-
-		if (value.MinimumShouldMatch is not null)
-		{
-			writer.WritePropertyName("minimum_should_match");
-			JsonSerializer.Serialize(writer, value.MinimumShouldMatch, options);
-		}
-
-		if (value.MinimumShouldMatchField is not null)
-		{
-			writer.WritePropertyName("minimum_should_match_field");
-			JsonSerializer.Serialize(writer, value.MinimumShouldMatchField, options);
-		}
-
-		if (value.MinimumShouldMatchScript is not null)
-		{
-			writer.WritePropertyName("minimum_should_match_script");
-			JsonSerializer.Serialize(writer, value.MinimumShouldMatchScript, options);
-		}
-
-		if (!string.IsNullOrEmpty(value.QueryName))
-		{
-			writer.WritePropertyName("_name");
-			writer.WriteStringValue(value.QueryName);
-		}
-
-		writer.WritePropertyName("terms");
-		JsonSerializer.Serialize(writer, value.Terms, options);
+		writer.WriteProperty(options, PropBoost, value.Boost);
+		writer.WriteProperty(options, PropMinimumShouldMatch, value.MinimumShouldMatch);
+		writer.WriteProperty(options, PropMinimumShouldMatchField, value.MinimumShouldMatchField);
+		writer.WriteProperty(options, PropMinimumShouldMatchScript, value.MinimumShouldMatchScript);
+		writer.WriteProperty(options, PropQueryName, value.QueryName);
+		writer.WriteProperty(options, PropTerms, value.Terms);
 		writer.WriteEndObject();
 		writer.WriteEndObject();
 	}
@@ -138,6 +133,10 @@ public sealed partial class TermsSetQuery
 		if (field is null)
 			throw new ArgumentNullException(nameof(field));
 		Field = field;
+	}
+
+	internal TermsSetQuery()
+	{
 	}
 
 	/// <summary>

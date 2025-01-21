@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,160 @@ using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.Core.Mtermvectors;
 
+internal sealed partial class MultiTermVectorsOperationConverter : System.Text.Json.Serialization.JsonConverter<MultiTermVectorsOperation>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropDoc = System.Text.Json.JsonEncodedText.Encode("doc");
+	private static readonly System.Text.Json.JsonEncodedText PropFields = System.Text.Json.JsonEncodedText.Encode("fields");
+	private static readonly System.Text.Json.JsonEncodedText PropFieldStatistics = System.Text.Json.JsonEncodedText.Encode("field_statistics");
+	private static readonly System.Text.Json.JsonEncodedText PropFilter = System.Text.Json.JsonEncodedText.Encode("filter");
+	private static readonly System.Text.Json.JsonEncodedText PropId = System.Text.Json.JsonEncodedText.Encode("_id");
+	private static readonly System.Text.Json.JsonEncodedText PropIndex = System.Text.Json.JsonEncodedText.Encode("_index");
+	private static readonly System.Text.Json.JsonEncodedText PropOffsets = System.Text.Json.JsonEncodedText.Encode("offsets");
+	private static readonly System.Text.Json.JsonEncodedText PropPayloads = System.Text.Json.JsonEncodedText.Encode("payloads");
+	private static readonly System.Text.Json.JsonEncodedText PropPositions = System.Text.Json.JsonEncodedText.Encode("positions");
+	private static readonly System.Text.Json.JsonEncodedText PropRouting = System.Text.Json.JsonEncodedText.Encode("routing");
+	private static readonly System.Text.Json.JsonEncodedText PropTermStatistics = System.Text.Json.JsonEncodedText.Encode("term_statistics");
+	private static readonly System.Text.Json.JsonEncodedText PropVersion = System.Text.Json.JsonEncodedText.Encode("version");
+	private static readonly System.Text.Json.JsonEncodedText PropVersionType = System.Text.Json.JsonEncodedText.Encode("version_type");
+
+	public override MultiTermVectorsOperation Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<object?> propDoc = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Fields?> propFields = default;
+		LocalJsonProperty<bool?> propFieldStatistics = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Core.TermVectors.Filter?> propFilter = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Id?> propId = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.IndexName?> propIndex = default;
+		LocalJsonProperty<bool?> propOffsets = default;
+		LocalJsonProperty<bool?> propPayloads = default;
+		LocalJsonProperty<bool?> propPositions = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Routing?> propRouting = default;
+		LocalJsonProperty<bool?> propTermStatistics = default;
+		LocalJsonProperty<long?> propVersion = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.VersionType?> propVersionType = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propDoc.TryRead(ref reader, options, PropDoc))
+			{
+				continue;
+			}
+
+			if (propFields.TryRead(ref reader, options, PropFields, typeof(SingleOrManyFieldsMarker)))
+			{
+				continue;
+			}
+
+			if (propFieldStatistics.TryRead(ref reader, options, PropFieldStatistics))
+			{
+				continue;
+			}
+
+			if (propFilter.TryRead(ref reader, options, PropFilter))
+			{
+				continue;
+			}
+
+			if (propId.TryRead(ref reader, options, PropId))
+			{
+				continue;
+			}
+
+			if (propIndex.TryRead(ref reader, options, PropIndex))
+			{
+				continue;
+			}
+
+			if (propOffsets.TryRead(ref reader, options, PropOffsets))
+			{
+				continue;
+			}
+
+			if (propPayloads.TryRead(ref reader, options, PropPayloads))
+			{
+				continue;
+			}
+
+			if (propPositions.TryRead(ref reader, options, PropPositions))
+			{
+				continue;
+			}
+
+			if (propRouting.TryRead(ref reader, options, PropRouting))
+			{
+				continue;
+			}
+
+			if (propTermStatistics.TryRead(ref reader, options, PropTermStatistics))
+			{
+				continue;
+			}
+
+			if (propVersion.TryRead(ref reader, options, PropVersion))
+			{
+				continue;
+			}
+
+			if (propVersionType.TryRead(ref reader, options, PropVersionType))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new MultiTermVectorsOperation
+		{
+			Doc = propDoc.Value
+,
+			Fields = propFields.Value
+,
+			FieldStatistics = propFieldStatistics.Value
+,
+			Filter = propFilter.Value
+,
+			Id = propId.Value
+,
+			Index = propIndex.Value
+,
+			Offsets = propOffsets.Value
+,
+			Payloads = propPayloads.Value
+,
+			Positions = propPositions.Value
+,
+			Routing = propRouting.Value
+,
+			TermStatistics = propTermStatistics.Value
+,
+			Version = propVersion.Value
+,
+			VersionType = propVersionType.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, MultiTermVectorsOperation value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropDoc, value.Doc);
+		writer.WriteProperty(options, PropFields, value.Fields, typeof(SingleOrManyFieldsMarker));
+		writer.WriteProperty(options, PropFieldStatistics, value.FieldStatistics);
+		writer.WriteProperty(options, PropFilter, value.Filter);
+		writer.WriteProperty(options, PropId, value.Id);
+		writer.WriteProperty(options, PropIndex, value.Index);
+		writer.WriteProperty(options, PropOffsets, value.Offsets);
+		writer.WriteProperty(options, PropPayloads, value.Payloads);
+		writer.WriteProperty(options, PropPositions, value.Positions);
+		writer.WriteProperty(options, PropRouting, value.Routing);
+		writer.WriteProperty(options, PropTermStatistics, value.TermStatistics);
+		writer.WriteProperty(options, PropVersion, value.Version);
+		writer.WriteProperty(options, PropVersionType, value.VersionType);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(MultiTermVectorsOperationConverter))]
 public sealed partial class MultiTermVectorsOperation
 {
 	/// <summary>
@@ -34,7 +189,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// An artificial document (a document not present in the index) for which you want to retrieve term vectors.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("doc")]
 	public object? Doc { get; set; }
 
 	/// <summary>
@@ -43,8 +197,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// Used as the default list unless a specific field list is provided in the <c>completion_fields</c> or <c>fielddata_fields</c> parameters.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("fields")]
-	[JsonConverter(typeof(SingleOrManyFieldsConverter))]
 	public Elastic.Clients.Elasticsearch.Fields? Fields { get; set; }
 
 	/// <summary>
@@ -52,7 +204,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// If <c>true</c>, the response includes the document count, sum of document frequencies, and sum of total term frequencies.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("field_statistics")]
 	public bool? FieldStatistics { get; set; }
 
 	/// <summary>
@@ -60,7 +211,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// Filter terms based on their tf-idf scores.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("filter")]
 	public Elastic.Clients.Elasticsearch.Core.TermVectors.Filter? Filter { get; set; }
 
 	/// <summary>
@@ -68,7 +218,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// The ID of the document.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("_id")]
 	public Elastic.Clients.Elasticsearch.Id? Id { get; set; }
 
 	/// <summary>
@@ -76,7 +225,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// The index of the document.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("_index")]
 	public Elastic.Clients.Elasticsearch.IndexName? Index { get; set; }
 
 	/// <summary>
@@ -84,7 +232,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// If <c>true</c>, the response includes term offsets.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("offsets")]
 	public bool? Offsets { get; set; }
 
 	/// <summary>
@@ -92,7 +239,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// If <c>true</c>, the response includes term payloads.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("payloads")]
 	public bool? Payloads { get; set; }
 
 	/// <summary>
@@ -100,7 +246,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// If <c>true</c>, the response includes term positions.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("positions")]
 	public bool? Positions { get; set; }
 
 	/// <summary>
@@ -108,7 +253,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// Custom value used to route operations to a specific shard.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("routing")]
 	public Elastic.Clients.Elasticsearch.Routing? Routing { get; set; }
 
 	/// <summary>
@@ -116,7 +260,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// If true, the response includes term frequency and document frequency.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("term_statistics")]
 	public bool? TermStatistics { get; set; }
 
 	/// <summary>
@@ -124,7 +267,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// If <c>true</c>, returns the document version as part of a hit.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("version")]
 	public long? Version { get; set; }
 
 	/// <summary>
@@ -132,7 +274,6 @@ public sealed partial class MultiTermVectorsOperation
 	/// Specific version type.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("version_type")]
 	public Elastic.Clients.Elasticsearch.VersionType? VersionType { get; set; }
 }
 

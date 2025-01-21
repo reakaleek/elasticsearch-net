@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using System;
 using System.Collections.Generic;
@@ -27,79 +28,110 @@ using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.Ingest;
 
-internal sealed partial class DocumentSimulationConverter : JsonConverter<DocumentSimulation>
+internal sealed partial class DocumentSimulationConverter : System.Text.Json.Serialization.JsonConverter<DocumentSimulation>
 {
-	public override DocumentSimulation Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+	private static readonly System.Text.Json.JsonEncodedText PropMetadata = System.Text.Json.JsonEncodedText.Encode("metadata");
+	private static readonly System.Text.Json.JsonEncodedText PropId = System.Text.Json.JsonEncodedText.Encode("_id");
+	private static readonly System.Text.Json.JsonEncodedText PropIndex = System.Text.Json.JsonEncodedText.Encode("_index");
+	private static readonly System.Text.Json.JsonEncodedText PropIngest = System.Text.Json.JsonEncodedText.Encode("_ingest");
+	private static readonly System.Text.Json.JsonEncodedText PropRouting = System.Text.Json.JsonEncodedText.Encode("_routing");
+	private static readonly System.Text.Json.JsonEncodedText PropSource = System.Text.Json.JsonEncodedText.Encode("_source");
+	private static readonly System.Text.Json.JsonEncodedText PropVersion = System.Text.Json.JsonEncodedText.Encode("_version");
+	private static readonly System.Text.Json.JsonEncodedText PropVersionType = System.Text.Json.JsonEncodedText.Encode("_version_type");
+
+	public override DocumentSimulation Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
 	{
-		if (reader.TokenType != JsonTokenType.StartObject)
-			throw new JsonException("Unexpected JSON detected.");
-		string id = default;
-		string index = default;
-		Elastic.Clients.Elasticsearch.Ingest.Ingest ingest = default;
-		string? routing = default;
-		IReadOnlyDictionary<string, object> source = default;
-		long? version = default;
-		Elastic.Clients.Elasticsearch.VersionType? versionType = default;
-		Dictionary<string, string> additionalProperties = null;
-		while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		System.Collections.Generic.Dictionary<string, string> propMetadata = default;
+		LocalJsonProperty<string> propId = default;
+		LocalJsonProperty<string> propIndex = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Ingest.Ingest> propIngest = default;
+		LocalJsonProperty<string?> propRouting = default;
+		LocalJsonProperty<IReadOnlyDictionary<string, object>> propSource = default;
+		LocalJsonProperty<long?> propVersion = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.VersionType?> propVersionType = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
 		{
-			if (reader.TokenType == JsonTokenType.PropertyName)
+			if (propId.TryRead(ref reader, options, PropId))
 			{
-				var property = reader.GetString();
-				if (property == "_id")
-				{
-					id = JsonSerializer.Deserialize<string>(ref reader, options);
-					continue;
-				}
+				continue;
+			}
 
-				if (property == "_index")
-				{
-					index = JsonSerializer.Deserialize<string>(ref reader, options);
-					continue;
-				}
+			if (propIndex.TryRead(ref reader, options, PropIndex))
+			{
+				continue;
+			}
 
-				if (property == "_ingest")
-				{
-					ingest = JsonSerializer.Deserialize<Elastic.Clients.Elasticsearch.Ingest.Ingest>(ref reader, options);
-					continue;
-				}
+			if (propIngest.TryRead(ref reader, options, PropIngest))
+			{
+				continue;
+			}
 
-				if (property == "_routing")
-				{
-					routing = JsonSerializer.Deserialize<string?>(ref reader, options);
-					continue;
-				}
+			if (propRouting.TryRead(ref reader, options, PropRouting))
+			{
+				continue;
+			}
 
-				if (property == "_source")
-				{
-					source = JsonSerializer.Deserialize<IReadOnlyDictionary<string, object>>(ref reader, options);
-					continue;
-				}
+			if (propSource.TryRead(ref reader, options, PropSource))
+			{
+				continue;
+			}
 
-				if (property == "_version")
-				{
-					version = JsonSerializer.Deserialize<long?>(ref reader, options);
-					continue;
-				}
+			if (propVersion.TryRead(ref reader, options, PropVersion))
+			{
+				continue;
+			}
 
-				if (property == "_version_type")
-				{
-					versionType = JsonSerializer.Deserialize<Elastic.Clients.Elasticsearch.VersionType?>(ref reader, options);
-					continue;
-				}
+			if (propVersionType.TryRead(ref reader, options, PropVersionType))
+			{
+				continue;
+			}
 
-				additionalProperties ??= new Dictionary<string, string>();
-				var additionalValue = JsonSerializer.Deserialize<string>(ref reader, options);
-				additionalProperties.Add(property, additionalValue);
+			propMetadata ??= new System.Collections.Generic.Dictionary<string, string>();
+			reader.ReadProperty(options, out string key, out string value);
+			propMetadata[key] = value;
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new DocumentSimulation
+		{
+			Metadata = propMetadata
+,
+			Id = propId.Value
+,
+			Index = propIndex.Value
+,
+			Ingest = propIngest.Value
+,
+			Routing = propRouting.Value
+,
+			Source = propSource.Value
+,
+			Version = propVersion.Value
+,
+			VersionType = propVersionType.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, DocumentSimulation value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropId, value.Id);
+		writer.WriteProperty(options, PropIndex, value.Index);
+		writer.WriteProperty(options, PropIngest, value.Ingest);
+		writer.WriteProperty(options, PropRouting, value.Routing);
+		writer.WriteProperty(options, PropSource, value.Source);
+		writer.WriteProperty(options, PropVersion, value.Version);
+		writer.WriteProperty(options, PropVersionType, value.VersionType);
+		if (value.Metadata is not null)
+		{
+			foreach (var item in value.Metadata)
+			{
+				writer.WriteProperty(options, item.Key, item.Value);
 			}
 		}
 
-		return new DocumentSimulation { Id = id, Index = index, Ingest = ingest, Metadata = additionalProperties, Routing = routing, Source = source, Version = version, VersionType = versionType };
-	}
-
-	public override void Write(Utf8JsonWriter writer, DocumentSimulation value, JsonSerializerOptions options)
-	{
-		throw new NotImplementedException("'DocumentSimulation' is a readonly type, used only on responses and does not support being written to JSON.");
+		writer.WriteEndObject();
 	}
 }
 

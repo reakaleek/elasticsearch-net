@@ -47,7 +47,7 @@ public sealed partial class DownsampleRequestParameters : RequestParameters
 /// The source index must be read only (<c>index.blocks.write: true</c>).
 /// </para>
 /// </summary>
-public sealed partial class DownsampleRequest : PlainRequest<DownsampleRequestParameters>, ISelfSerializable
+public sealed partial class DownsampleRequest : PlainRequest<DownsampleRequestParameters>, ISelfTwoWaySerializable
 {
 	public DownsampleRequest(Elastic.Clients.Elasticsearch.IndexName index, Elastic.Clients.Elasticsearch.IndexName targetIndex) : base(r => r.Required("index", index).Required("target_index", targetIndex))
 	{
@@ -61,12 +61,16 @@ public sealed partial class DownsampleRequest : PlainRequest<DownsampleRequestPa
 
 	internal override string OperationName => "indices.downsample";
 
-	[JsonIgnore]
 	public Elastic.Clients.Elasticsearch.IndexManagement.DownsampleConfig Config { get; set; }
 
-	void ISelfSerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	void ISelfTwoWaySerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
 	{
 		JsonSerializer.Serialize(writer, Config, options);
+	}
+
+	void ISelfTwoWaySerializable.Deserialize(ref Utf8JsonReader reader, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	{
+		Config = settings.RequestResponseSerializer.Deserialize<Elastic.Clients.Elasticsearch.IndexManagement.DownsampleConfig>(ref reader);
 	}
 }
 

@@ -18,19 +18,84 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport.Products.Elasticsearch;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.Security;
 
+internal sealed partial class OidcPrepareAuthenticationResponseConverter : System.Text.Json.Serialization.JsonConverter<OidcPrepareAuthenticationResponse>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropNonce = System.Text.Json.JsonEncodedText.Encode("nonce");
+	private static readonly System.Text.Json.JsonEncodedText PropRealm = System.Text.Json.JsonEncodedText.Encode("realm");
+	private static readonly System.Text.Json.JsonEncodedText PropRedirect = System.Text.Json.JsonEncodedText.Encode("redirect");
+	private static readonly System.Text.Json.JsonEncodedText PropState = System.Text.Json.JsonEncodedText.Encode("state");
+
+	public override OidcPrepareAuthenticationResponse Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<string> propNonce = default;
+		LocalJsonProperty<string> propRealm = default;
+		LocalJsonProperty<string> propRedirect = default;
+		LocalJsonProperty<string> propState = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propNonce.TryRead(ref reader, options, PropNonce))
+			{
+				continue;
+			}
+
+			if (propRealm.TryRead(ref reader, options, PropRealm))
+			{
+				continue;
+			}
+
+			if (propRedirect.TryRead(ref reader, options, PropRedirect))
+			{
+				continue;
+			}
+
+			if (propState.TryRead(ref reader, options, PropState))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new OidcPrepareAuthenticationResponse
+		{
+			Nonce = propNonce.Value
+,
+			Realm = propRealm.Value
+,
+			Redirect = propRedirect.Value
+,
+			State = propState.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, OidcPrepareAuthenticationResponse value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropNonce, value.Nonce);
+		writer.WriteProperty(options, PropRealm, value.Realm);
+		writer.WriteProperty(options, PropRedirect, value.Redirect);
+		writer.WriteProperty(options, PropState, value.State);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(OidcPrepareAuthenticationResponseConverter))]
 public sealed partial class OidcPrepareAuthenticationResponse : ElasticsearchResponse
 {
-	[JsonInclude, JsonPropertyName("nonce")]
 	public string Nonce { get; init; }
-	[JsonInclude, JsonPropertyName("realm")]
 	public string Realm { get; init; }
 
 	/// <summary>
@@ -38,8 +103,6 @@ public sealed partial class OidcPrepareAuthenticationResponse : ElasticsearchRes
 	/// A URI that points to the authorization endpoint of the OpenID Connect Provider with all the parameters of the authentication request as HTTP GET parameters.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("redirect")]
 	public string Redirect { get; init; }
-	[JsonInclude, JsonPropertyName("state")]
 	public string State { get; init; }
 }

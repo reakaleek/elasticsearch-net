@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Core;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport;
 using System;
@@ -39,40 +40,48 @@ public enum EventType
 	Pageview
 }
 
-internal sealed class EventTypeConverter : JsonConverter<EventType>
+internal sealed partial class EventTypeConverter : System.Text.Json.Serialization.JsonConverter<EventType>
 {
-	public override EventType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+	private static readonly System.Text.Json.JsonEncodedText MemberSearchclick = System.Text.Json.JsonEncodedText.Encode("search_click");
+	private static readonly System.Text.Json.JsonEncodedText MemberSearch = System.Text.Json.JsonEncodedText.Encode("search");
+	private static readonly System.Text.Json.JsonEncodedText MemberPageview = System.Text.Json.JsonEncodedText.Encode("page_view");
+
+	public override EventType Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
 	{
-		var enumString = reader.GetString();
-		switch (enumString)
+		reader.ValidateToken(System.Text.Json.JsonTokenType.String);
+		if (reader.ValueTextEquals(MemberSearchclick))
 		{
-			case "search_click":
-				return EventType.Searchclick;
-			case "search":
-				return EventType.Search;
-			case "page_view":
-				return EventType.Pageview;
+			return EventType.Searchclick;
 		}
 
-		ThrowHelper.ThrowJsonException();
-		return default;
+		if (reader.ValueTextEquals(MemberSearch))
+		{
+			return EventType.Search;
+		}
+
+		if (reader.ValueTextEquals(MemberPageview))
+		{
+			return EventType.Pageview;
+		}
+
+		throw new System.Text.Json.JsonException($"Unknown value '{reader.GetString()}' for enum '{nameof(EventType)}'.");
 	}
 
-	public override void Write(Utf8JsonWriter writer, EventType value, JsonSerializerOptions options)
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, EventType value, System.Text.Json.JsonSerializerOptions options)
 	{
 		switch (value)
 		{
 			case EventType.Searchclick:
-				writer.WriteStringValue("search_click");
-				return;
+				writer.WriteStringValue(MemberSearchclick);
+				break;
 			case EventType.Search:
-				writer.WriteStringValue("search");
-				return;
+				writer.WriteStringValue(MemberSearch);
+				break;
 			case EventType.Pageview:
-				writer.WriteStringValue("page_view");
-				return;
+				writer.WriteStringValue(MemberPageview);
+				break;
+			default:
+				throw new System.Text.Json.JsonException($"Invalid value '{value}' for enum '{nameof(EventType)}'.");
 		}
-
-		writer.WriteNullValue();
 	}
 }

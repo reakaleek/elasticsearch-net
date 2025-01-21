@@ -18,14 +18,81 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport.Products.Elasticsearch;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.Security;
 
+internal sealed partial class OidcAuthenticateResponseConverter : System.Text.Json.Serialization.JsonConverter<OidcAuthenticateResponse>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropAccessToken = System.Text.Json.JsonEncodedText.Encode("access_token");
+	private static readonly System.Text.Json.JsonEncodedText PropExpiresIn = System.Text.Json.JsonEncodedText.Encode("expires_in");
+	private static readonly System.Text.Json.JsonEncodedText PropRefreshToken = System.Text.Json.JsonEncodedText.Encode("refresh_token");
+	private static readonly System.Text.Json.JsonEncodedText PropType = System.Text.Json.JsonEncodedText.Encode("type");
+
+	public override OidcAuthenticateResponse Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<string> propAccessToken = default;
+		LocalJsonProperty<int> propExpiresIn = default;
+		LocalJsonProperty<string> propRefreshToken = default;
+		LocalJsonProperty<string> propType = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propAccessToken.TryRead(ref reader, options, PropAccessToken))
+			{
+				continue;
+			}
+
+			if (propExpiresIn.TryRead(ref reader, options, PropExpiresIn))
+			{
+				continue;
+			}
+
+			if (propRefreshToken.TryRead(ref reader, options, PropRefreshToken))
+			{
+				continue;
+			}
+
+			if (propType.TryRead(ref reader, options, PropType))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new OidcAuthenticateResponse
+		{
+			AccessToken = propAccessToken.Value
+,
+			ExpiresIn = propExpiresIn.Value
+,
+			RefreshToken = propRefreshToken.Value
+,
+			Type = propType.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, OidcAuthenticateResponse value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropAccessToken, value.AccessToken);
+		writer.WriteProperty(options, PropExpiresIn, value.ExpiresIn);
+		writer.WriteProperty(options, PropRefreshToken, value.RefreshToken);
+		writer.WriteProperty(options, PropType, value.Type);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(OidcAuthenticateResponseConverter))]
 public sealed partial class OidcAuthenticateResponse : ElasticsearchResponse
 {
 	/// <summary>
@@ -33,7 +100,6 @@ public sealed partial class OidcAuthenticateResponse : ElasticsearchResponse
 	/// The Elasticsearch access token.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("access_token")]
 	public string AccessToken { get; init; }
 
 	/// <summary>
@@ -41,7 +107,6 @@ public sealed partial class OidcAuthenticateResponse : ElasticsearchResponse
 	/// The duration (in seconds) of the tokens.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("expires_in")]
 	public int ExpiresIn { get; init; }
 
 	/// <summary>
@@ -49,7 +114,6 @@ public sealed partial class OidcAuthenticateResponse : ElasticsearchResponse
 	/// The Elasticsearch refresh token.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("refresh_token")]
 	public string RefreshToken { get; init; }
 
 	/// <summary>
@@ -57,6 +121,5 @@ public sealed partial class OidcAuthenticateResponse : ElasticsearchResponse
 	/// The type of token.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("type")]
 	public string Type { get; init; }
 }

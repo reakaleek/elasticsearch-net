@@ -18,17 +18,63 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport.Products.Elasticsearch;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.MachineLearning;
 
+internal sealed partial class GetInfluencersResponseConverter : System.Text.Json.Serialization.JsonConverter<GetInfluencersResponse>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropCount = System.Text.Json.JsonEncodedText.Encode("count");
+	private static readonly System.Text.Json.JsonEncodedText PropInfluencers = System.Text.Json.JsonEncodedText.Encode("influencers");
+
+	public override GetInfluencersResponse Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<long> propCount = default;
+		LocalJsonProperty<IReadOnlyCollection<Elastic.Clients.Elasticsearch.MachineLearning.Influencer>> propInfluencers = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propCount.TryRead(ref reader, options, PropCount))
+			{
+				continue;
+			}
+
+			if (propInfluencers.TryRead(ref reader, options, PropInfluencers))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new GetInfluencersResponse
+		{
+			Count = propCount.Value
+,
+			Influencers = propInfluencers.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, GetInfluencersResponse value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropCount, value.Count);
+		writer.WriteProperty(options, PropInfluencers, value.Influencers);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(GetInfluencersResponseConverter))]
 public sealed partial class GetInfluencersResponse : ElasticsearchResponse
 {
-	[JsonInclude, JsonPropertyName("count")]
 	public long Count { get; init; }
 
 	/// <summary>
@@ -36,6 +82,5 @@ public sealed partial class GetInfluencersResponse : ElasticsearchResponse
 	/// Array of influencer objects
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("influencers")]
 	public IReadOnlyCollection<Elastic.Clients.Elasticsearch.MachineLearning.Influencer> Influencers { get; init; }
 }

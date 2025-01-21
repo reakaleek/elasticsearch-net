@@ -114,7 +114,7 @@ public sealed partial class PutIndicesSettingsRequestParameters : RequestParamet
 /// To change the analyzer for existing backing indices, you must create a new data stream and reindex your data into it.
 /// </para>
 /// </summary>
-public sealed partial class PutIndicesSettingsRequest : PlainRequest<PutIndicesSettingsRequestParameters>, ISelfSerializable
+public sealed partial class PutIndicesSettingsRequest : PlainRequest<PutIndicesSettingsRequestParameters>, ISelfTwoWaySerializable
 {
 	public PutIndicesSettingsRequest()
 	{
@@ -197,12 +197,16 @@ public sealed partial class PutIndicesSettingsRequest : PlainRequest<PutIndicesS
 	/// </summary>
 	[JsonIgnore]
 	public Elastic.Clients.Elasticsearch.Duration? Timeout { get => Q<Elastic.Clients.Elasticsearch.Duration?>("timeout"); set => Q("timeout", value); }
-	[JsonIgnore]
 	public Elastic.Clients.Elasticsearch.IndexManagement.IndexSettings Settings { get; set; }
 
-	void ISelfSerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	void ISelfTwoWaySerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
 	{
 		JsonSerializer.Serialize(writer, Settings, options);
+	}
+
+	void ISelfTwoWaySerializable.Deserialize(ref Utf8JsonReader reader, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	{
+		Settings = settings.RequestResponseSerializer.Deserialize<Elastic.Clients.Elasticsearch.IndexManagement.IndexSettings>(ref reader);
 	}
 }
 

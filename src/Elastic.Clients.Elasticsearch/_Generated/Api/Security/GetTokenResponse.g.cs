@@ -18,28 +18,118 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport.Products.Elasticsearch;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.Security;
 
+internal sealed partial class GetTokenResponseConverter : System.Text.Json.Serialization.JsonConverter<GetTokenResponse>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropAccessToken = System.Text.Json.JsonEncodedText.Encode("access_token");
+	private static readonly System.Text.Json.JsonEncodedText PropAuthentication = System.Text.Json.JsonEncodedText.Encode("authentication");
+	private static readonly System.Text.Json.JsonEncodedText PropExpiresIn = System.Text.Json.JsonEncodedText.Encode("expires_in");
+	private static readonly System.Text.Json.JsonEncodedText PropKerberosAuthenticationResponseToken = System.Text.Json.JsonEncodedText.Encode("kerberos_authentication_response_token");
+	private static readonly System.Text.Json.JsonEncodedText PropRefreshToken = System.Text.Json.JsonEncodedText.Encode("refresh_token");
+	private static readonly System.Text.Json.JsonEncodedText PropScope = System.Text.Json.JsonEncodedText.Encode("scope");
+	private static readonly System.Text.Json.JsonEncodedText PropType = System.Text.Json.JsonEncodedText.Encode("type");
+
+	public override GetTokenResponse Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<string> propAccessToken = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Security.AuthenticatedUser> propAuthentication = default;
+		LocalJsonProperty<long> propExpiresIn = default;
+		LocalJsonProperty<string?> propKerberosAuthenticationResponseToken = default;
+		LocalJsonProperty<string?> propRefreshToken = default;
+		LocalJsonProperty<string?> propScope = default;
+		LocalJsonProperty<string> propType = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propAccessToken.TryRead(ref reader, options, PropAccessToken))
+			{
+				continue;
+			}
+
+			if (propAuthentication.TryRead(ref reader, options, PropAuthentication))
+			{
+				continue;
+			}
+
+			if (propExpiresIn.TryRead(ref reader, options, PropExpiresIn))
+			{
+				continue;
+			}
+
+			if (propKerberosAuthenticationResponseToken.TryRead(ref reader, options, PropKerberosAuthenticationResponseToken))
+			{
+				continue;
+			}
+
+			if (propRefreshToken.TryRead(ref reader, options, PropRefreshToken))
+			{
+				continue;
+			}
+
+			if (propScope.TryRead(ref reader, options, PropScope))
+			{
+				continue;
+			}
+
+			if (propType.TryRead(ref reader, options, PropType))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new GetTokenResponse
+		{
+			AccessToken = propAccessToken.Value
+,
+			Authentication = propAuthentication.Value
+,
+			ExpiresIn = propExpiresIn.Value
+,
+			KerberosAuthenticationResponseToken = propKerberosAuthenticationResponseToken.Value
+,
+			RefreshToken = propRefreshToken.Value
+,
+			Scope = propScope.Value
+,
+			Type = propType.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, GetTokenResponse value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropAccessToken, value.AccessToken);
+		writer.WriteProperty(options, PropAuthentication, value.Authentication);
+		writer.WriteProperty(options, PropExpiresIn, value.ExpiresIn);
+		writer.WriteProperty(options, PropKerberosAuthenticationResponseToken, value.KerberosAuthenticationResponseToken);
+		writer.WriteProperty(options, PropRefreshToken, value.RefreshToken);
+		writer.WriteProperty(options, PropScope, value.Scope);
+		writer.WriteProperty(options, PropType, value.Type);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(GetTokenResponseConverter))]
 public sealed partial class GetTokenResponse : ElasticsearchResponse
 {
-	[JsonInclude, JsonPropertyName("access_token")]
 	public string AccessToken { get; init; }
-	[JsonInclude, JsonPropertyName("authentication")]
 	public Elastic.Clients.Elasticsearch.Security.AuthenticatedUser Authentication { get; init; }
-	[JsonInclude, JsonPropertyName("expires_in")]
 	public long ExpiresIn { get; init; }
-	[JsonInclude, JsonPropertyName("kerberos_authentication_response_token")]
 	public string? KerberosAuthenticationResponseToken { get; init; }
-	[JsonInclude, JsonPropertyName("refresh_token")]
 	public string? RefreshToken { get; init; }
-	[JsonInclude, JsonPropertyName("scope")]
 	public string? Scope { get; init; }
-	[JsonInclude, JsonPropertyName("type")]
 	public string Type { get; init; }
 }

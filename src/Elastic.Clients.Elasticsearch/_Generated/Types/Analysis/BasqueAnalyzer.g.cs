@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using System;
 using System.Collections.Generic;
@@ -27,17 +28,74 @@ using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.Analysis;
 
+internal sealed partial class BasqueAnalyzerConverter : System.Text.Json.Serialization.JsonConverter<BasqueAnalyzer>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropStemExclusion = System.Text.Json.JsonEncodedText.Encode("stem_exclusion");
+	private static readonly System.Text.Json.JsonEncodedText PropStopwords = System.Text.Json.JsonEncodedText.Encode("stopwords");
+	private static readonly System.Text.Json.JsonEncodedText PropStopwordsPath = System.Text.Json.JsonEncodedText.Encode("stopwords_path");
+	private static readonly System.Text.Json.JsonEncodedText PropType = System.Text.Json.JsonEncodedText.Encode("type");
+
+	public override BasqueAnalyzer Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<ICollection<string>?> propStemExclusion = default;
+		LocalJsonProperty<ICollection<string>?> propStopwords = default;
+		LocalJsonProperty<string?> propStopwordsPath = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propStemExclusion.TryRead(ref reader, options, PropStemExclusion))
+			{
+				continue;
+			}
+
+			if (propStopwords.TryRead(ref reader, options, PropStopwords, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>)))
+			{
+				continue;
+			}
+
+			if (propStopwordsPath.TryRead(ref reader, options, PropStopwordsPath))
+			{
+				continue;
+			}
+
+			if (reader.ValueTextEquals(PropType))
+			{
+				reader.Skip();
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new BasqueAnalyzer
+		{
+			StemExclusion = propStemExclusion.Value
+,
+			Stopwords = propStopwords.Value
+,
+			StopwordsPath = propStopwordsPath.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, BasqueAnalyzer value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropStemExclusion, value.StemExclusion);
+		writer.WriteProperty(options, PropStopwords, value.Stopwords, typeof(SingleOrManyMarker<IReadOnlyCollection<string>?, string>));
+		writer.WriteProperty(options, PropStopwordsPath, value.StopwordsPath);
+		writer.WriteProperty(options, PropType, value.Type);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(BasqueAnalyzerConverter))]
 public sealed partial class BasqueAnalyzer : IAnalyzer
 {
-	[JsonInclude, JsonPropertyName("stem_exclusion")]
 	public ICollection<string>? StemExclusion { get; set; }
-	[JsonInclude, JsonPropertyName("stopwords")]
-	[SingleOrManyCollectionConverter(typeof(string))]
 	public ICollection<string>? Stopwords { get; set; }
-	[JsonInclude, JsonPropertyName("stopwords_path")]
 	public string? StopwordsPath { get; set; }
 
-	[JsonInclude, JsonPropertyName("type")]
 	public string Type => "basque";
 }
 

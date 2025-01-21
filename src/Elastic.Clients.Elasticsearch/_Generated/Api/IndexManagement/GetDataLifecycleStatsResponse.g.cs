@@ -18,14 +18,81 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport.Products.Elasticsearch;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.IndexManagement;
 
+internal sealed partial class GetDataLifecycleStatsResponseConverter : System.Text.Json.Serialization.JsonConverter<GetDataLifecycleStatsResponse>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropDataStreamCount = System.Text.Json.JsonEncodedText.Encode("data_stream_count");
+	private static readonly System.Text.Json.JsonEncodedText PropDataStreams = System.Text.Json.JsonEncodedText.Encode("data_streams");
+	private static readonly System.Text.Json.JsonEncodedText PropLastRunDurationInMillis = System.Text.Json.JsonEncodedText.Encode("last_run_duration_in_millis");
+	private static readonly System.Text.Json.JsonEncodedText PropTimeBetweenStartsInMillis = System.Text.Json.JsonEncodedText.Encode("time_between_starts_in_millis");
+
+	public override GetDataLifecycleStatsResponse Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<int> propDataStreamCount = default;
+		LocalJsonProperty<IReadOnlyCollection<Elastic.Clients.Elasticsearch.IndexManagement.DataStreamStats>> propDataStreams = default;
+		LocalJsonProperty<long?> propLastRunDurationInMillis = default;
+		LocalJsonProperty<long?> propTimeBetweenStartsInMillis = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propDataStreamCount.TryRead(ref reader, options, PropDataStreamCount))
+			{
+				continue;
+			}
+
+			if (propDataStreams.TryRead(ref reader, options, PropDataStreams))
+			{
+				continue;
+			}
+
+			if (propLastRunDurationInMillis.TryRead(ref reader, options, PropLastRunDurationInMillis))
+			{
+				continue;
+			}
+
+			if (propTimeBetweenStartsInMillis.TryRead(ref reader, options, PropTimeBetweenStartsInMillis))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new GetDataLifecycleStatsResponse
+		{
+			DataStreamCount = propDataStreamCount.Value
+,
+			DataStreams = propDataStreams.Value
+,
+			LastRunDurationInMillis = propLastRunDurationInMillis.Value
+,
+			TimeBetweenStartsInMillis = propTimeBetweenStartsInMillis.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, GetDataLifecycleStatsResponse value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropDataStreamCount, value.DataStreamCount);
+		writer.WriteProperty(options, PropDataStreams, value.DataStreams);
+		writer.WriteProperty(options, PropLastRunDurationInMillis, value.LastRunDurationInMillis);
+		writer.WriteProperty(options, PropTimeBetweenStartsInMillis, value.TimeBetweenStartsInMillis);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(GetDataLifecycleStatsResponseConverter))]
 public sealed partial class GetDataLifecycleStatsResponse : ElasticsearchResponse
 {
 	/// <summary>
@@ -33,7 +100,6 @@ public sealed partial class GetDataLifecycleStatsResponse : ElasticsearchRespons
 	/// The count of data streams currently being managed by the data stream lifecycle.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("data_stream_count")]
 	public int DataStreamCount { get; init; }
 
 	/// <summary>
@@ -41,7 +107,6 @@ public sealed partial class GetDataLifecycleStatsResponse : ElasticsearchRespons
 	/// Information about the data streams that are managed by the data stream lifecycle.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("data_streams")]
 	public IReadOnlyCollection<Elastic.Clients.Elasticsearch.IndexManagement.DataStreamStats> DataStreams { get; init; }
 
 	/// <summary>
@@ -49,7 +114,6 @@ public sealed partial class GetDataLifecycleStatsResponse : ElasticsearchRespons
 	/// The duration of the last data stream lifecycle execution.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("last_run_duration_in_millis")]
 	public long? LastRunDurationInMillis { get; init; }
 
 	/// <summary>
@@ -58,6 +122,5 @@ public sealed partial class GetDataLifecycleStatsResponse : ElasticsearchRespons
 	/// This value should amount approximately to <c>data_streams.lifecycle.poll_interval</c>.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("time_between_starts_in_millis")]
 	public long? TimeBetweenStartsInMillis { get; init; }
 }

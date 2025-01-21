@@ -49,7 +49,7 @@ public sealed partial class PutInferenceRequestParameters : RequestParameters
 /// However, if you do not plan to use the inference APIs to use these models or if you want to use non-NLP models, use the machine learning trained model APIs.
 /// </para>
 /// </summary>
-public sealed partial class PutInferenceRequest : PlainRequest<PutInferenceRequestParameters>, ISelfSerializable
+public sealed partial class PutInferenceRequest : PlainRequest<PutInferenceRequestParameters>, ISelfTwoWaySerializable
 {
 	public PutInferenceRequest(Elastic.Clients.Elasticsearch.Id inferenceId) : base(r => r.Required("inference_id", inferenceId))
 	{
@@ -67,12 +67,16 @@ public sealed partial class PutInferenceRequest : PlainRequest<PutInferenceReque
 
 	internal override string OperationName => "inference.put";
 
-	[JsonIgnore]
 	public Elastic.Clients.Elasticsearch.Inference.InferenceEndpoint InferenceConfig { get; set; }
 
-	void ISelfSerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	void ISelfTwoWaySerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
 	{
 		JsonSerializer.Serialize(writer, InferenceConfig, options);
+	}
+
+	void ISelfTwoWaySerializable.Deserialize(ref Utf8JsonReader reader, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	{
+		InferenceConfig = settings.RequestResponseSerializer.Deserialize<Elastic.Clients.Elasticsearch.Inference.InferenceEndpoint>(ref reader);
 	}
 }
 

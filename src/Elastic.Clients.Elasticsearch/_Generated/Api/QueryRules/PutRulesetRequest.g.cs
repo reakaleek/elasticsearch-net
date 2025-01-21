@@ -18,6 +18,7 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Requests;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport;
@@ -34,6 +35,39 @@ public sealed partial class PutRulesetRequestParameters : RequestParameters
 {
 }
 
+internal sealed partial class PutRulesetRequestConverter : System.Text.Json.Serialization.JsonConverter<PutRulesetRequest>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropRules = System.Text.Json.JsonEncodedText.Encode("rules");
+
+	public override PutRulesetRequest Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<ICollection<Elastic.Clients.Elasticsearch.QueryRules.QueryRule>> propRules = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propRules.TryRead(ref reader, options, PropRules, typeof(SingleOrManyMarker<IReadOnlyCollection<Elastic.Clients.Elasticsearch.QueryRules.QueryRule>, Elastic.Clients.Elasticsearch.QueryRules.QueryRule>)))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new PutRulesetRequest
+		{
+			Rules = propRules.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, PutRulesetRequest value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropRules, value.Rules, typeof(SingleOrManyMarker<IReadOnlyCollection<Elastic.Clients.Elasticsearch.QueryRules.QueryRule>, Elastic.Clients.Elasticsearch.QueryRules.QueryRule>));
+		writer.WriteEndObject();
+	}
+}
+
 /// <summary>
 /// <para>
 /// Create or update a query ruleset.
@@ -47,6 +81,7 @@ public sealed partial class PutRulesetRequestParameters : RequestParameters
 /// If multiple matching rules pin more than 100 documents, only the first 100 documents are pinned in the order they are specified in the ruleset.
 /// </para>
 /// </summary>
+[JsonConverter(typeof(PutRulesetRequestConverter))]
 public sealed partial class PutRulesetRequest : PlainRequest<PutRulesetRequestParameters>
 {
 	public PutRulesetRequest(Elastic.Clients.Elasticsearch.Id rulesetId) : base(r => r.Required("ruleset_id", rulesetId))
@@ -61,8 +96,6 @@ public sealed partial class PutRulesetRequest : PlainRequest<PutRulesetRequestPa
 
 	internal override string OperationName => "query_rules.put_ruleset";
 
-	[JsonInclude, JsonPropertyName("rules")]
-	[SingleOrManyCollectionConverter(typeof(Elastic.Clients.Elasticsearch.QueryRules.QueryRule))]
 	public ICollection<Elastic.Clients.Elasticsearch.QueryRules.QueryRule> Rules { get; set; }
 }
 

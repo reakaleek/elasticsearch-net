@@ -18,14 +18,81 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport.Products.Elasticsearch;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.Security;
 
+internal sealed partial class DelegatePkiResponseConverter : System.Text.Json.Serialization.JsonConverter<DelegatePkiResponse>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropAccessToken = System.Text.Json.JsonEncodedText.Encode("access_token");
+	private static readonly System.Text.Json.JsonEncodedText PropAuthentication = System.Text.Json.JsonEncodedText.Encode("authentication");
+	private static readonly System.Text.Json.JsonEncodedText PropExpiresIn = System.Text.Json.JsonEncodedText.Encode("expires_in");
+	private static readonly System.Text.Json.JsonEncodedText PropType = System.Text.Json.JsonEncodedText.Encode("type");
+
+	public override DelegatePkiResponse Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<string> propAccessToken = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.Security.Authentication?> propAuthentication = default;
+		LocalJsonProperty<long> propExpiresIn = default;
+		LocalJsonProperty<string> propType = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propAccessToken.TryRead(ref reader, options, PropAccessToken))
+			{
+				continue;
+			}
+
+			if (propAuthentication.TryRead(ref reader, options, PropAuthentication))
+			{
+				continue;
+			}
+
+			if (propExpiresIn.TryRead(ref reader, options, PropExpiresIn))
+			{
+				continue;
+			}
+
+			if (propType.TryRead(ref reader, options, PropType))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new DelegatePkiResponse
+		{
+			AccessToken = propAccessToken.Value
+,
+			Authentication = propAuthentication.Value
+,
+			ExpiresIn = propExpiresIn.Value
+,
+			Type = propType.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, DelegatePkiResponse value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropAccessToken, value.AccessToken);
+		writer.WriteProperty(options, PropAuthentication, value.Authentication);
+		writer.WriteProperty(options, PropExpiresIn, value.ExpiresIn);
+		writer.WriteProperty(options, PropType, value.Type);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(DelegatePkiResponseConverter))]
 public sealed partial class DelegatePkiResponse : ElasticsearchResponse
 {
 	/// <summary>
@@ -33,9 +100,7 @@ public sealed partial class DelegatePkiResponse : ElasticsearchResponse
 	/// An access token associated with the subject distinguished name of the client's certificate.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("access_token")]
 	public string AccessToken { get; init; }
-	[JsonInclude, JsonPropertyName("authentication")]
 	public Elastic.Clients.Elasticsearch.Security.Authentication? Authentication { get; init; }
 
 	/// <summary>
@@ -43,7 +108,6 @@ public sealed partial class DelegatePkiResponse : ElasticsearchResponse
 	/// The amount of time (in seconds) before the token expires.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("expires_in")]
 	public long ExpiresIn { get; init; }
 
 	/// <summary>
@@ -51,6 +115,5 @@ public sealed partial class DelegatePkiResponse : ElasticsearchResponse
 	/// The type of token.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("type")]
 	public string Type { get; init; }
 }

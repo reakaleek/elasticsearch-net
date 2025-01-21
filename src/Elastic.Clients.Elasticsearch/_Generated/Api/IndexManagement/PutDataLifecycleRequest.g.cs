@@ -65,7 +65,7 @@ public sealed partial class PutDataLifecycleRequestParameters : RequestParameter
 /// Update the data stream lifecycle of the specified data streams.
 /// </para>
 /// </summary>
-public sealed partial class PutDataLifecycleRequest : PlainRequest<PutDataLifecycleRequestParameters>, ISelfSerializable
+public sealed partial class PutDataLifecycleRequest : PlainRequest<PutDataLifecycleRequestParameters>, ISelfTwoWaySerializable
 {
 	public PutDataLifecycleRequest(Elastic.Clients.Elasticsearch.DataStreamNames name) : base(r => r.Required("name", name))
 	{
@@ -107,12 +107,16 @@ public sealed partial class PutDataLifecycleRequest : PlainRequest<PutDataLifecy
 	/// </summary>
 	[JsonIgnore]
 	public Elastic.Clients.Elasticsearch.Duration? Timeout { get => Q<Elastic.Clients.Elasticsearch.Duration?>("timeout"); set => Q("timeout", value); }
-	[JsonIgnore]
 	public Elastic.Clients.Elasticsearch.IndexManagement.DataStreamLifecycle Lifecycle { get; set; }
 
-	void ISelfSerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	void ISelfTwoWaySerializable.Serialize(Utf8JsonWriter writer, JsonSerializerOptions options, IElasticsearchClientSettings settings)
 	{
 		JsonSerializer.Serialize(writer, Lifecycle, options);
+	}
+
+	void ISelfTwoWaySerializable.Deserialize(ref Utf8JsonReader reader, JsonSerializerOptions options, IElasticsearchClientSettings settings)
+	{
+		Lifecycle = settings.RequestResponseSerializer.Deserialize<Elastic.Clients.Elasticsearch.IndexManagement.DataStreamLifecycle>(ref reader);
 	}
 }
 

@@ -18,14 +18,71 @@
 #nullable restore
 
 using Elastic.Clients.Elasticsearch.Fluent;
+using Elastic.Clients.Elasticsearch.Next;
 using Elastic.Clients.Elasticsearch.Serialization;
 using Elastic.Transport.Products.Elasticsearch;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Elastic.Clients.Elasticsearch.MachineLearning;
 
+internal sealed partial class EvaluateDataFrameResponseConverter : System.Text.Json.Serialization.JsonConverter<EvaluateDataFrameResponse>
+{
+	private static readonly System.Text.Json.JsonEncodedText PropClassification = System.Text.Json.JsonEncodedText.Encode("classification");
+	private static readonly System.Text.Json.JsonEncodedText PropOutlierDetection = System.Text.Json.JsonEncodedText.Encode("outlier_detection");
+	private static readonly System.Text.Json.JsonEncodedText PropRegression = System.Text.Json.JsonEncodedText.Encode("regression");
+
+	public override EvaluateDataFrameResponse Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+	{
+		reader.ValidateToken(System.Text.Json.JsonTokenType.StartObject);
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.MachineLearning.DataframeClassificationSummary?> propClassification = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.MachineLearning.DataframeOutlierDetectionSummary?> propOutlierDetection = default;
+		LocalJsonProperty<Elastic.Clients.Elasticsearch.MachineLearning.DataframeRegressionSummary?> propRegression = default;
+		while (reader.Read() && reader.TokenType is System.Text.Json.JsonTokenType.PropertyName)
+		{
+			if (propClassification.TryRead(ref reader, options, PropClassification))
+			{
+				continue;
+			}
+
+			if (propOutlierDetection.TryRead(ref reader, options, PropOutlierDetection))
+			{
+				continue;
+			}
+
+			if (propRegression.TryRead(ref reader, options, PropRegression))
+			{
+				continue;
+			}
+
+			throw new System.Text.Json.JsonException($"Unknown JSON property '{reader.GetString()}' for type '{typeToConvert.Name}'.");
+		}
+
+		reader.ValidateToken(System.Text.Json.JsonTokenType.EndObject);
+		return new EvaluateDataFrameResponse
+		{
+			Classification = propClassification.Value
+,
+			OutlierDetection = propOutlierDetection.Value
+,
+			Regression = propRegression.Value
+		};
+	}
+
+	public override void Write(System.Text.Json.Utf8JsonWriter writer, EvaluateDataFrameResponse value, System.Text.Json.JsonSerializerOptions options)
+	{
+		writer.WriteStartObject();
+		writer.WriteProperty(options, PropClassification, value.Classification);
+		writer.WriteProperty(options, PropOutlierDetection, value.OutlierDetection);
+		writer.WriteProperty(options, PropRegression, value.Regression);
+		writer.WriteEndObject();
+	}
+}
+
+[JsonConverter(typeof(EvaluateDataFrameResponseConverter))]
 public sealed partial class EvaluateDataFrameResponse : ElasticsearchResponse
 {
 	/// <summary>
@@ -34,7 +91,6 @@ public sealed partial class EvaluateDataFrameResponse : ElasticsearchResponse
 	/// It outputs a prediction that identifies to which of the classes each document belongs.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("classification")]
 	public Elastic.Clients.Elasticsearch.MachineLearning.DataframeClassificationSummary? Classification { get; init; }
 
 	/// <summary>
@@ -43,7 +99,6 @@ public sealed partial class EvaluateDataFrameResponse : ElasticsearchResponse
 	/// It outputs the probability that each document is an outlier.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("outlier_detection")]
 	public Elastic.Clients.Elasticsearch.MachineLearning.DataframeOutlierDetectionSummary? OutlierDetection { get; init; }
 
 	/// <summary>
@@ -51,6 +106,5 @@ public sealed partial class EvaluateDataFrameResponse : ElasticsearchResponse
 	/// Evaluation results for a regression analysis which outputs a prediction of values.
 	/// </para>
 	/// </summary>
-	[JsonInclude, JsonPropertyName("regression")]
 	public Elastic.Clients.Elasticsearch.MachineLearning.DataframeRegressionSummary? Regression { get; init; }
 }
